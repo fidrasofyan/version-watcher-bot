@@ -1,0 +1,19 @@
+[Unit]
+Description=Version Watcher Bot
+After=network.target
+
+[Service]
+User=user
+Group=group
+
+# Directory where the app is located
+WorkingDirectory=/path/to/the/app
+
+# Command to start the app
+ExecStart=/path/to/the/app/server_linux-x64-modern
+
+# Memory limit
+MemoryLimit=1G
+
+[Install]
+WantedBy=multi-user.target
