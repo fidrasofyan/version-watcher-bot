@@ -43,7 +43,7 @@ process.env.TZ = config.APP_TIMEZONE;
 
 import packageJson from "../package.json";
 console.log(
-  `${config.APP_NAME} # version: ${packageJson.version} - env: ${config.NODE_ENV} - timezone: ${config.APP_TIMEZONE}`
+  `${config.APP_NAME} # Bun: ${Bun.version} - app: v${packageJson.version} - env: ${config.NODE_ENV} - timezone: ${config.APP_TIMEZONE}`
 );
 
 export default config;
