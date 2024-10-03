@@ -6,6 +6,7 @@ import config from "./config";
 import { CronJob } from "cron";
 import { DateTime } from "luxon";
 import { notifyUsers } from "./job";
+import { kysely } from "./database";
 
 // Set Telegram webhook
 if (config.NODE_ENV === "production") {
@@ -115,4 +116,16 @@ if (config.NODE_ENV === "production") {
   );
 
   console.log(`${config.APP_NAME} # cron job has been started successfully`);
+}
+
+// Graceful shutdown
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
+
+async function shutdown() {
+  httpServer.stop();
+  await kysely.destroy();
+
+  console.log(`${config.APP_NAME} # server has been stopped successfully`);
+  process.exit(0);
 }

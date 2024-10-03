@@ -179,3 +179,6 @@ dist
 
 # Build output
 dist/
+
+# Docker
+compose.yaml
