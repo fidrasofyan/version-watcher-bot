@@ -41,10 +41,14 @@ export async function setTelegramWebhook() {
   }
 }
 
-export async function modifyEnvLine(linePrefix: string, newValue: string) {
-  const envData = await Bun.file("./.env").text();
+async function modifyEnvLine(linePrefix: string, newValue: string) {
+  const envFile = Bun.file("./.env");
 
-  const updatedEnvData = envData
+  if (!(await envFile.exists())) {
+    return;
+  }
+
+  const updatedEnvData = (await envFile.text())
     .split("\n")
     .map((line) => {
       if (line.startsWith(`${linePrefix}=`)) {
