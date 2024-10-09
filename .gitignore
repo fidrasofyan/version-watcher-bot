@@ -182,3 +182,4 @@ dist/
 
 # Docker
 compose.yaml
+*.sh
