@@ -8,6 +8,7 @@ util
 .env*
 .git
 .gitignore
+*.sh
 docker-compose*
 compose*
 Dockerfile*
