@@ -8,9 +8,8 @@ services:
       dockerfile: Dockerfile
     mem_limit: 1G
     restart: on-failure:3
+    volumes:
+      - ./.env:/app/.env
     ports:
-      - 3030:3030
-    env_file:
-      - path: "./.env"
-        required: true      
+      - 127.0.0.1:3030:3030
     
