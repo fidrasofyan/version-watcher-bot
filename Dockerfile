@@ -5,7 +5,7 @@ FROM oven/bun:1.2.2-slim
 WORKDIR /app
 
 # Copy package files first for better caching
-COPY bun.lockb ./
+COPY bun.lock ./
 COPY package.json ./
 
 # Install dependencies
