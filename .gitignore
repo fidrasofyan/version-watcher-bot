@@ -183,3 +183,4 @@ dist/
 # Docker
 compose.yaml
 *.sh
+!start.sh
