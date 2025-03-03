@@ -48,8 +48,9 @@ const config = {
 process.env.TZ = config.APP_TIMEZONE;
 
 import packageJson from '../package.json';
+import { generateDatetime } from './util';
 console.log(
-  `${config.APP_NAME} # Bun: ${Bun.version} - app: v${packageJson.version} - env: ${config.NODE_ENV} - timezone: ${config.APP_TIMEZONE}`,
+  `${config.APP_NAME} (${generateDatetime()}) # Bun: ${Bun.version} - app: v${packageJson.version} - env: ${config.NODE_ENV} - timezone: ${config.APP_TIMEZONE}`,
 );
 
 export default config;

@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import config from './config';
 
 const telegramApiUrl =
@@ -37,7 +38,7 @@ export async function setTelegramWebhook() {
     config.WEBHOOK_SECRET_TOKEN = secretToken;
 
     console.log(
-      `${config.APP_NAME} # telegram webhook has been set successfully`,
+      `${config.APP_NAME} (${generateDatetime()}) # telegram webhook has been set successfully`,
     );
   } catch (error) {
     // On network error
@@ -79,4 +80,10 @@ export function json(data: {
       'Content-Type': 'application/json',
     },
   });
+}
+
+export function generateDatetime() {
+  return DateTime.now().toFormat(
+    'yyyy-MM-dd HH:mm:ss ZZZZ',
+  );
 }

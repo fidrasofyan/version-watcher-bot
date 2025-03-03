@@ -9,6 +9,7 @@ import {
 } from 'kysely';
 import { Pool } from 'pg';
 import config from '../config';
+import { generateDatetime } from '../util';
 import type { DB } from './types';
 
 const pool = new Pool({
@@ -82,5 +83,5 @@ export async function migrate(type: 'latest' | 'down') {
 // Test connection
 await sql`SELECT 1`.execute(kysely);
 console.log(
-  `${config.APP_NAME} # database connection has been established successfully`,
+  `${config.APP_NAME} (${generateDatetime()}) # database connection has been established successfully`,
 );

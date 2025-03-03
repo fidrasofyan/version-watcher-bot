@@ -1,5 +1,4 @@
 import { CronJob } from 'cron';
-import { DateTime } from 'luxon';
 import config from './config';
 import { kysely } from './database';
 import { handler } from './handler';
@@ -9,7 +8,11 @@ import type {
   TelegramRequest,
   TelegramResponse,
 } from './types';
-import { json, setTelegramWebhook } from './util';
+import {
+  generateDatetime,
+  json,
+  setTelegramWebhook,
+} from './util';
 
 // Set Telegram webhook
 if (config.NODE_ENV === 'production') {
@@ -93,16 +96,10 @@ const httpServer = Bun.serve({
 });
 
 console.log(
-  `${config.APP_NAME} # server running at ${httpServer.url}`,
+  `${config.APP_NAME} (${generateDatetime()}) # server running at ${httpServer.url}`,
 );
 
 // Cron
-function generateDatetime() {
-  return DateTime.now().toFormat(
-    'yyyy-MM-dd HH:mm:ss ZZZZ',
-  );
-}
-
 if (config.NODE_ENV === 'production') {
   new CronJob(
     '0 * * * *', // Every hour
@@ -124,7 +121,7 @@ if (config.NODE_ENV === 'production') {
   );
 
   console.log(
-    `${config.APP_NAME} # cron job has been started successfully`,
+    `${config.APP_NAME} (${generateDatetime()}) # cron job has been started successfully`,
   );
 }
 
@@ -137,7 +134,7 @@ async function shutdown() {
   await kysely.destroy();
 
   console.log(
-    `${config.APP_NAME} # server has been stopped successfully`,
+    `${config.APP_NAME} (${generateDatetime()}) # server has been stopped successfully`,
   );
   process.exit(0);
 }
