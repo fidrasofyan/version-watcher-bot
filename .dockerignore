@@ -14,7 +14,6 @@ compose*
 Dockerfile*
 README.md
 LICENSE
-*.json
 *.http
 *.yaml
 version-watcher-bot.service
