@@ -1,12 +1,24 @@
-import { chatId, notFound, unwatch, start, watch, watchList } from "./app";
-import { DEFAULT_REPLY_MARKUP } from "./constant";
-import { TelegramRepository } from "./repository/telegram-repository";
-import type { TelegramRequest, TelegramResponse } from "./types";
+import {
+  chatId,
+  notFound,
+  start,
+  unwatch,
+  watch,
+  watchList,
+} from './app';
+import { DEFAULT_REPLY_MARKUP } from './constant';
+import { TelegramRepository } from './repository/telegram-repository';
+import type {
+  TelegramRequest,
+  TelegramResponse,
+} from './types';
 
-export async function handler(req: TelegramRequest): Promise<TelegramResponse> {
+export async function handler(
+  req: TelegramRequest,
+): Promise<TelegramResponse> {
   const data = {
     chatId: 0,
-    command: "",
+    command: '',
   };
 
   // If callback query
@@ -19,53 +31,57 @@ export async function handler(req: TelegramRequest): Promise<TelegramResponse> {
 
     if (!req.message.text) {
       return {
-        method: "sendMessage",
+        method: 'sendMessage',
         chat_id: req.message.chat.id,
-        parse_mode: "HTML",
-        text: "<i>Only text messages are allowed</i>",
+        parse_mode: 'HTML',
+        text: '<i>Only text messages are allowed</i>',
       };
     }
 
     data.command = req.message.text
       .slice(0, 30)
       .toLowerCase()
-      .replace(/[\s_/]+/g, "");
+      .replace(/[\s_/]+/g, '');
 
-    if (data.command === "cancel") {
-      await TelegramRepository.deleteChat(req.message.chat.id);
+    if (data.command === 'cancel') {
+      await TelegramRepository.deleteChat(
+        req.message.chat.id,
+      );
       return {
-        method: "sendMessage",
+        method: 'sendMessage',
         chat_id: req.message.chat.id,
-        parse_mode: "HTML",
-        text: "<i>Cancelled</i>",
+        parse_mode: 'HTML',
+        text: '<i>Cancelled</i>',
         reply_markup: DEFAULT_REPLY_MARKUP,
       };
     }
   }
 
-  const chat = await TelegramRepository.getChat(data.chatId);
+  const chat = await TelegramRepository.getChat(
+    data.chatId,
+  );
   if (chat) {
     data.command = chat.command;
   }
 
   switch (data.command) {
-    case "chatid": {
+    case 'chatid': {
       return chatId(req);
     }
 
-    case "start": {
+    case 'start': {
       return start(req);
     }
 
-    case "unwatch": {
+    case 'unwatch': {
       return unwatch(req);
     }
 
-    case "watchlist": {
+    case 'watchlist': {
       return watchList(req);
     }
 
-    case "watch": {
+    case 'watch': {
       return watch(req);
     }
 

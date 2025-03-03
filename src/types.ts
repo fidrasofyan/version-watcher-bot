@@ -7,12 +7,14 @@ export type TelegramRequest = {
 };
 
 export type TelegramResponse = {
-  method: "sendMessage" | "editMessageText";
+  method: 'sendMessage' | 'editMessageText';
   message_id?: number;
   chat_id: number;
-  parse_mode?: "HTML" | "MarkdownV2";
+  parse_mode?: 'HTML' | 'MarkdownV2';
   text: string;
-  reply_markup?: TelegramReplyKeyboardMarkup | TelegramInlineKeyboardMarkup;
+  reply_markup?:
+    | TelegramReplyKeyboardMarkup
+    | TelegramInlineKeyboardMarkup;
 };
 
 // Telegram types
@@ -26,14 +28,17 @@ export type TelegramCallbackQuery = {
 
 export type TelegramChat = {
   id: number;
-  type: "private" | "group" | "supergroup" | "channel";
+  type: 'private' | 'group' | 'supergroup' | 'channel';
   username?: string;
   first_name?: string;
   last_name?: string;
 };
 
 export type TelegramInlineKeyboardMarkup = {
-  inline_keyboard: { text: string; callback_data: string }[][];
+  inline_keyboard: {
+    text: string;
+    callback_data: string;
+  }[][];
 };
 
 export type TelegramMessage = {

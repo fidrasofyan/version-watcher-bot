@@ -14,5 +14,7 @@ compose*
 Dockerfile*
 README.md
 LICENSE
-tsconfig.json
+*.json
+*.http
+*.yaml
 version-watcher-bot.service

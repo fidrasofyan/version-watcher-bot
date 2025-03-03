@@ -1,10 +1,15 @@
-import type { TelegramRequest, TelegramResponse } from "../types";
+import type {
+  TelegramRequest,
+  TelegramResponse,
+} from '../types';
 
-export function chatId(req: TelegramRequest): TelegramResponse {
+export function chatId(
+  req: TelegramRequest,
+): TelegramResponse {
   return {
-    method: "sendMessage",
+    method: 'sendMessage',
     chat_id: req.message!.chat.id,
-    parse_mode: "HTML",
+    parse_mode: 'HTML',
     text: `Your chat ID: <code>${req.message!.chat.id}</code>`,
   };
 }

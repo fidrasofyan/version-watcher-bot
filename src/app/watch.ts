@@ -1,17 +1,22 @@
-import { sql } from "kysely";
-import { kysely } from "../database";
-import { TelegramRepository } from "../repository/telegram-repository";
-import type { TelegramRequest, TelegramResponse } from "../types";
-import { DEFAULT_REPLY_MARKUP } from "../constant";
+import { sql } from 'kysely';
+import { DEFAULT_REPLY_MARKUP } from '../constant';
+import { kysely } from '../database';
+import { TelegramRepository } from '../repository/telegram-repository';
+import type {
+  TelegramRequest,
+  TelegramResponse,
+} from '../types';
 
-const COMMAND = "watch";
+const COMMAND = 'watch';
 
-export async function watch(req: TelegramRequest): Promise<TelegramResponse> {
+export async function watch(
+  req: TelegramRequest,
+): Promise<TelegramResponse> {
   const data = {
     isCallbackQuery: false,
     messageId: 0,
     chatId: 0,
-    text: "",
+    text: '',
   };
 
   if (req.message) {
@@ -45,47 +50,54 @@ export async function watch(req: TelegramRequest): Promise<TelegramResponse> {
       });
 
       return {
-        method: "sendMessage",
+        method: 'sendMessage',
         chat_id: data.chatId,
-        parse_mode: "HTML",
+        parse_mode: 'HTML',
         text: [
-          "<i>Type what you want to watch...</i>",
+          '<i>Type what you want to watch...</i>',
           '\n<i>E.g. "Ubuntu", "nginx"</i>',
-        ].join("\n"),
+        ].join('\n'),
         reply_markup: DEFAULT_REPLY_MARKUP,
       };
     }
 
     // Step 2
     case 2: {
-      if (req.callback_query?.data === "cancel") {
+      if (req.callback_query?.data === 'cancel') {
         await TelegramRepository.deleteChat(data.chatId);
         return {
-          method: "editMessageText",
+          method: 'editMessageText',
           message_id: data.messageId,
           chat_id: data.chatId,
-          parse_mode: "HTML",
-          text: "<i>Cancelled</i>",
+          parse_mode: 'HTML',
+          text: '<i>Cancelled</i>',
         };
       }
 
       const products = await kysely
-        .selectFrom("product")
-        .select(["id", "name"])
+        .selectFrom('product')
+        .select(['id', 'name'])
         .where(
           () =>
-            sql`to_tsvector('english', name) @@ plainto_tsquery(${data.text})`
+            sql`to_tsvector('english', name) @@ plainto_tsquery(${data.text})`,
         )
         .execute();
 
       if (products.length === 0) {
         return {
-          method: "sendMessage",
+          method: 'sendMessage',
           chat_id: data.chatId,
-          parse_mode: "HTML",
-          text: "<i>No products found. Type another keyword...</i>",
+          parse_mode: 'HTML',
+          text: '<i>No products found. Type another keyword...</i>',
           reply_markup: {
-            inline_keyboard: [[{ text: "❌ Cancel", callback_data: "cancel" }]],
+            inline_keyboard: [
+              [
+                {
+                  text: '❌ Cancel',
+                  callback_data: 'cancel',
+                },
+              ],
+            ],
           },
         };
       }
@@ -97,9 +109,9 @@ export async function watch(req: TelegramRequest): Promise<TelegramResponse> {
       });
 
       return {
-        method: "sendMessage",
+        method: 'sendMessage',
         chat_id: data.chatId,
-        text: "Choose a product:",
+        text: 'Choose a product:',
         reply_markup: {
           inline_keyboard: [
             ...products.map((product) => [
@@ -108,7 +120,12 @@ export async function watch(req: TelegramRequest): Promise<TelegramResponse> {
                 callback_data: product.id.toString(),
               },
             ]),
-            [{ text: "❌ Cancel", callback_data: "cancel" }],
+            [
+              {
+                text: '❌ Cancel',
+                callback_data: 'cancel',
+              },
+            ],
           ],
         },
       };
@@ -119,56 +136,58 @@ export async function watch(req: TelegramRequest): Promise<TelegramResponse> {
       if (!data.isCallbackQuery) {
         await TelegramRepository.deleteChat(data.chatId);
         return {
-          method: "sendMessage",
+          method: 'sendMessage',
           chat_id: data.chatId,
-          parse_mode: "HTML",
-          text: "<i>Invalid command</i>",
+          parse_mode: 'HTML',
+          text: '<i>Invalid command</i>',
           reply_markup: DEFAULT_REPLY_MARKUP,
         };
       }
 
-      if (req.callback_query?.data === "cancel") {
+      if (req.callback_query?.data === 'cancel') {
         await TelegramRepository.deleteChat(data.chatId);
         return {
-          method: "editMessageText",
+          method: 'editMessageText',
           message_id: data.messageId,
           chat_id: data.chatId,
-          parse_mode: "HTML",
-          text: "<i>Cancelled</i>",
+          parse_mode: 'HTML',
+          text: '<i>Cancelled</i>',
         };
       }
 
       const product = await kysely
-        .selectFrom("product")
-        .select(["id", "name"])
-        .where("product.id", "=", req.callback_query!.data)
+        .selectFrom('product')
+        .select(['id', 'name'])
+        .where('product.id', '=', req.callback_query!.data)
         .executeTakeFirstOrThrow();
 
       // Is it already in the list?
       const isExists =
         (
           await kysely
-            .selectFrom("watch_list")
-            .select((eb) => eb.fn.count<number>("id").as("count"))
-            .where("chat_id", "=", data.chatId.toString())
-            .where("product_id", "=", product.id.toString())
+            .selectFrom('watch_list')
+            .select((eb) =>
+              eb.fn.count<number>('id').as('count'),
+            )
+            .where('chat_id', '=', data.chatId.toString())
+            .where('product_id', '=', product.id.toString())
             .executeTakeFirstOrThrow()
         ).count > 0;
 
       if (isExists) {
         await TelegramRepository.deleteChat(data.chatId);
         return {
-          method: "editMessageText",
+          method: 'editMessageText',
           message_id: data.messageId,
           chat_id: data.chatId,
-          parse_mode: "HTML",
+          parse_mode: 'HTML',
           text: `<i>❌ ${product.name.toUpperCase()} is already in the list</i>`,
         };
       }
 
       // Add to the list
       await kysely
-        .insertInto("watch_list")
+        .insertInto('watch_list')
         .values({
           chat_id: data.chatId,
           product_id: product.id,
@@ -178,20 +197,20 @@ export async function watch(req: TelegramRequest): Promise<TelegramResponse> {
 
       await TelegramRepository.deleteChat(data.chatId);
       return {
-        method: "editMessageText",
+        method: 'editMessageText',
         message_id: data.messageId,
         chat_id: data.chatId,
-        parse_mode: "HTML",
+        parse_mode: 'HTML',
         text: `<i>✅ ${product.name.toUpperCase()} added to the list</i>`,
       };
     }
 
     default: {
       return {
-        method: "sendMessage",
+        method: 'sendMessage',
         chat_id: data.chatId,
-        parse_mode: "HTML",
-        text: "<i>Unhandled step</i>",
+        parse_mode: 'HTML',
+        text: '<i>Unhandled step</i>',
       };
     }
   }

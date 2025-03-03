@@ -1,3 +1,3 @@
-import { setTelegramWebhook } from "../src/util";
+import { setTelegramWebhook } from '../src/util';
 
 await setTelegramWebhook();

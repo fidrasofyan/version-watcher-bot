@@ -1,3 +1,3 @@
-import { migrate } from "../src/database";
+import { migrate } from '../src/database';
 
-await migrate("latest");
+await migrate('latest');

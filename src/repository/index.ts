@@ -1,1 +1,1 @@
-export * from "./telegram-repository";
+export * from './telegram-repository';

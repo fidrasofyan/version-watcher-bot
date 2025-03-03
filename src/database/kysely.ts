@@ -1,15 +1,15 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import {
   FileMigrationProvider,
   Kysely,
   Migrator,
   PostgresDialect,
   sql,
-} from "kysely";
-import type { DB } from "kysely-codegen";
-import { Pool } from "pg";
-import fs from "node:fs/promises";
-import path from "node:path";
-import config from "../config";
+} from 'kysely';
+import { Pool } from 'pg';
+import config from '../config';
+import type { DB } from './types';
 
 const pool = new Pool({
   host: config.DATABASE_HOST,
@@ -20,8 +20,10 @@ const pool = new Pool({
   max: config.DATABASE_MAX_CONNECTIONS,
 });
 
-pool.on("connect", async (client) => {
-  await client.query(`SET TIME ZONE '${config.APP_TIMEZONE}'`);
+pool.on('connect', async (client) => {
+  await client.query(
+    `SET TIME ZONE '${config.APP_TIMEZONE}'`,
+  );
 });
 
 const dialect = new PostgresDialect({
@@ -33,7 +35,7 @@ export const kysely = new Kysely<DB>({
 });
 
 // Migration
-export async function migrate(type: "latest" | "down") {
+export async function migrate(type: 'latest' | 'down') {
   const kysely = new Kysely<DB>({
     dialect,
   });
@@ -43,35 +45,35 @@ export async function migrate(type: "latest" | "down") {
     provider: new FileMigrationProvider({
       fs,
       path,
-      migrationFolder: path.join(__dirname, "./migration"),
+      migrationFolder: path.join(__dirname, './migration'),
     }),
   });
 
   const { error, results } =
-    type === "latest"
+    type === 'latest'
       ? await migrator.migrateToLatest()
       : await migrator.migrateDown();
 
-  results?.forEach((it) => {
-    if (it.status === "Success") {
+  for (const it of results ?? []) {
+    if (it.status === 'Success') {
       console.log(
         `migration "${it.migrationName}" was ${
-          type === "latest" ? "applied" : "rolled back"
-        } successfully`
+          type === 'latest' ? 'applied' : 'rolled back'
+        } successfully`,
       );
-    } else if (it.status === "Error") {
+    } else if (it.status === 'Error') {
       console.error(
-        `failed to ${type === "latest" ? "apply" : "rollback"} migration "${
+        `failed to ${type === 'latest' ? 'apply' : 'rollback'} migration "${
           it.migrationName
-        }"`
+        }"`,
       );
     }
-  });
+  }
 
   await kysely.destroy();
 
   if (error) {
-    console.error("failed to migrate");
+    console.error('failed to migrate');
     console.error(error);
     process.exit(1);
   }
@@ -80,5 +82,5 @@ export async function migrate(type: "latest" | "down") {
 // Test connection
 await sql`SELECT 1`.execute(kysely);
 console.log(
-  `${config.APP_NAME} # database connection has been established successfully`
+  `${config.APP_NAME} # database connection has been established successfully`,
 );

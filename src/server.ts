@@ -1,15 +1,18 @@
-import { handler } from "./handler";
-import { authMiddleware } from "./middleware/auth-middleware";
-import type { TelegramRequest, TelegramResponse } from "./types";
-import { json, setTelegramWebhook } from "./util";
-import config from "./config";
-import { CronJob } from "cron";
-import { DateTime } from "luxon";
-import { notifyUsers } from "./job";
-import { kysely } from "./database";
+import { CronJob } from 'cron';
+import { DateTime } from 'luxon';
+import config from './config';
+import { kysely } from './database';
+import { handler } from './handler';
+import { notifyUsers } from './job';
+import { authMiddleware } from './middleware/auth-middleware';
+import type {
+  TelegramRequest,
+  TelegramResponse,
+} from './types';
+import { json, setTelegramWebhook } from './util';
 
 // Set Telegram webhook
-if (config.NODE_ENV === "production") {
+if (config.NODE_ENV === 'production') {
   await setTelegramWebhook();
 }
 
@@ -21,7 +24,7 @@ const httpServer = Bun.serve({
     try {
       const url = new URL(req.url);
 
-      if (url.pathname === "/telegram-bot") {
+      if (url.pathname === '/telegram-bot') {
         // Auth middleware
         const auth = await authMiddleware(req);
         if (!auth.ok) {
@@ -29,13 +32,14 @@ const httpServer = Bun.serve({
             statusCode: 401,
             body: {
               success: false,
-              message: "Unauthorized",
+              message: 'Unauthorized',
             },
           });
         }
 
         // Request
-        const telegramRequest: TelegramRequest = await req.json();
+        const telegramRequest: TelegramRequest =
+          await req.json();
 
         try {
           // Handler
@@ -49,14 +53,14 @@ const httpServer = Bun.serve({
           console.error(error);
 
           const body: TelegramResponse = {
-            method: "sendMessage",
+            method: 'sendMessage',
             chat_id: telegramRequest.message
               ? telegramRequest.message.chat.id
               : telegramRequest.callback_query
-              ? telegramRequest.callback_query.from.id
-              : 0,
-            parse_mode: "HTML",
-            text: "<i>Internal server error</i>",
+                ? telegramRequest.callback_query.from.id
+                : 0,
+            parse_mode: 'HTML',
+            text: '<i>Internal server error</i>',
           };
 
           return json({
@@ -71,7 +75,7 @@ const httpServer = Bun.serve({
         statusCode: 404,
         body: {
           success: false,
-          message: "Not found",
+          message: 'Not found',
         },
       });
     } catch (error) {
@@ -81,26 +85,30 @@ const httpServer = Bun.serve({
         statusCode: 500,
         body: {
           success: false,
-          message: "Internal server error",
+          message: 'Internal server error',
         },
       });
     }
   },
 });
 
-console.log(`${config.APP_NAME} # server running at ${httpServer.url}`);
+console.log(
+  `${config.APP_NAME} # server running at ${httpServer.url}`,
+);
 
 // Cron
 function generateDatetime() {
-  return DateTime.now().toFormat("yyyy-MM-dd HH:mm:ss ZZZZ");
+  return DateTime.now().toFormat(
+    'yyyy-MM-dd HH:mm:ss ZZZZ',
+  );
 }
 
-if (config.NODE_ENV === "production") {
+if (config.NODE_ENV === 'production') {
   new CronJob(
-    "0 * * * *", // Every hour
+    '0 * * * *', // Every hour
     async () => {
       console.log(
-        `${config.APP_NAME} (${generateDatetime()}) # cron: notifying users...`
+        `${config.APP_NAME} (${generateDatetime()}) # cron: notifying users...`,
       );
 
       await notifyUsers();
@@ -108,24 +116,28 @@ if (config.NODE_ENV === "production") {
       console.log(
         `${
           config.APP_NAME
-        } (${generateDatetime()}) # cron: notifying users... done`
+        } (${generateDatetime()}) # cron: notifying users... done`,
       );
     },
     null,
-    true
+    true,
   );
 
-  console.log(`${config.APP_NAME} # cron job has been started successfully`);
+  console.log(
+    `${config.APP_NAME} # cron job has been started successfully`,
+  );
 }
 
 // Graceful shutdown
-process.on("SIGTERM", shutdown);
-process.on("SIGINT", shutdown);
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 async function shutdown() {
   httpServer.stop();
   await kysely.destroy();
 
-  console.log(`${config.APP_NAME} # server has been stopped successfully`);
+  console.log(
+    `${config.APP_NAME} # server has been stopped successfully`,
+  );
   process.exit(0);
 }
