@@ -1,4 +1,3 @@
-import { sql } from 'kysely';
 import { DEFAULT_REPLY_MARKUP } from '../constant';
 import { kysely } from '../database';
 import { TelegramRepository } from '../repository/telegram-repository';
