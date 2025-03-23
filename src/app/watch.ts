@@ -77,10 +77,7 @@ export async function watch(
       const products = await kysely
         .selectFrom('product')
         .select(['id', 'name'])
-        .where(
-          () =>
-            sql`to_tsvector('english', name) @@ plainto_tsquery(${data.text})`,
-        )
+        .where('name', 'ilike', `%${data.text}%`)
         .execute();
 
       if (products.length === 0) {
