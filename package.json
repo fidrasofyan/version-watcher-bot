@@ -1,6 +1,6 @@
 {
   "name": "version-watcher-bot",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "type": "module",
   "module": "src/server.ts",
   "scripts": {
