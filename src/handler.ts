@@ -2,7 +2,8 @@ import {
   chatId,
   notFound,
   start,
-  unwatch,
+  unwatch1,
+  unwatch2,
   watch,
   watchList,
 } from './app';
@@ -41,7 +42,7 @@ export async function handler(
     data.command = req.message.text
       .slice(0, 30)
       .toLowerCase()
-      .replace(/[\s_/]+/g, '');
+      .replace(/[\s/]+/g, '');
 
     if (data.command === 'cancel') {
       await TelegramRepository.deleteChat(
@@ -74,7 +75,7 @@ export async function handler(
     }
 
     case 'unwatch': {
-      return unwatch(req);
+      return unwatch1(req);
     }
 
     case 'watchlist': {
@@ -86,6 +87,10 @@ export async function handler(
     }
 
     default: {
+      if (data.command.startsWith('unwatch_')) {
+        return unwatch2(req);
+      }
+
       return notFound(req);
     }
   }

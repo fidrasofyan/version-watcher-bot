@@ -16,6 +16,7 @@
     "migrate-latest": "bun run util/migrate-latest.ts && kysely-codegen --dialect postgres --out-file ./src/database/types.ts",
     "migrate-down": "bun run util/migrate-down.ts && kysely-codegen --dialect postgres --out-file ./src/database/types.ts",
     "set-telegram-webhook": "bun run util/set-telegram-webhook.ts",
+    "notify-users": "bun run util/notify-users.ts",
     "populate-product": "bun run util/populate-product.ts"
   },
   "dependencies": {

@@ -5,7 +5,7 @@ import type {
   TelegramResponse,
 } from '../types';
 
-export async function unwatch(
+export async function unwatch1(
   req: TelegramRequest,
 ): Promise<TelegramResponse> {
   const watchList = await kysely

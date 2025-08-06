@@ -59,7 +59,7 @@ export async function notifyUsers() {
 
       if (filteredProducts.length === 0) continue;
 
-      let text = '<b>Recent Release(s) Detected</b>\n\n';
+      let text = '<b>Recent Releases Detected</b>\n\n';
       text += filteredProducts
         .map(
           (p) =>
