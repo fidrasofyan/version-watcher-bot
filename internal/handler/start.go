@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/fidrasofyan/version-watcher-bot/database"
@@ -18,7 +17,7 @@ func Start(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 	}
 
 	if !exists {
-		user, err := database.Sqlc.CreateUser(ctx, &database.CreateUserParams{
+		_, err := database.Sqlc.CreateUser(ctx, &database.CreateUserParams{
 			ID:        req.Message.Chat.Id,
 			Username:  &req.Message.Chat.Username,
 			FirstName: &req.Message.Chat.FirstName,
@@ -28,7 +27,6 @@ func Start(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 		if err != nil {
 			return nil, custom_error.NewError(err)
 		}
-		fmt.Println("User created:", *user.FirstName)
 	}
 
 	return &types.TelegramResponse{
