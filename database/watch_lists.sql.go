@@ -53,7 +53,7 @@ JOIN LATERAL (
   FROM product_versions
   WHERE product_id = p.id
   ORDER BY version_release_date DESC NULLS LAST, release_date DESC NULLS LAST
-  LIMIT 3
+  LIMIT 1
 ) pv ON true
 WHERE wl.chat_id = $1
 GROUP BY p.label

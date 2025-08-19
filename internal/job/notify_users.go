@@ -134,6 +134,12 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 				text += "\n"
 			}
 
+			// Limit message length
+			if len(text) > 4000 {
+				text = text[:4000]
+				text += "\n\n<i>--- Part of the message has been truncated ---</i>"
+			}
+
 			service.SendMessage(&service.SendMessageParams{
 				ChatId:    wl.ChatID,
 				ParseMode: "HTML",

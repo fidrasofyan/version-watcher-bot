@@ -76,6 +76,12 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 		text += "\n"
 	}
 
+	// Limit message length
+	if len(text) > 4000 {
+		text = text[:4000]
+		text += "\n\n<i>--- Part of the message has been truncated ---</i>"
+	}
+
 	return &types.TelegramResponse{
 		Method:      "sendMessage",
 		ChatId:      req.Message.Chat.Id,
