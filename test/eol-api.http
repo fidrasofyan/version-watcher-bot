@@ -1,0 +1,17 @@
+###
+@apiUrl = https://endoflife.date/api/v1
+
+### Index
+GET {{apiUrl}} HTTP/1.1
+
+### Products
+GET {{apiUrl}}/products HTTP/1.1
+
+### Product: ubuntu
+GET {{apiUrl}}/products/ubuntu HTTP/1.1
+
+### Product latest release: ubuntu
+GET {{apiUrl}}/products/ubuntu/releases/latest HTTP/1.1
+
+### Product release: ubuntu
+GET {{apiUrl}}/products/ubuntu/releases/1.25 HTTP/1.1

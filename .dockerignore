@@ -1,0 +1,14 @@
+data/
+test/
+tmp/
+.git/
+.gitignore
+.air.toml
+.dockerignore
+.env*
+compose*
+Dockerfile
+sqlc.yaml
+server
+README.md
+*.sh

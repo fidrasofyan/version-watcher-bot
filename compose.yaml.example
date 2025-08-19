@@ -1,0 +1,15 @@
+name: version-watcher-bot
+
+services:
+  server:
+    container_name: version-watcher-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    mem_limit: 1G
+    restart: on-failure:3
+    ports:
+      - 127.0.0.1:3000:3000
+    env_file:
+      - path: ".env"
+        required: true

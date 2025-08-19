@@ -1,0 +1,6 @@
+data
+tmp
+.env
+!.env.example
+compose.yaml
+!compose.yaml.example

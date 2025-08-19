@@ -1,0 +1,41 @@
+### Message
+POST http://127.0.0.1:3000/webhook HTTP/1.1
+Content-Type: application/json
+X-Telegram-Bot-Api-Secret-Token: webhook_secret_token
+
+{
+  "update_id":10000,
+  "message": {
+    "message_id":1365,
+    "date":1441645532,
+    "from":{
+      "id":123456789,
+      "first_name":"Test Firstname",
+      "last_name":"Test Lastname",
+      "username":"Testusername"
+    },
+    "chat":{
+      "id":123456789,
+      "type": "private",
+      "first_name":"Test Firstname",
+      "last_name":"Test Lastname",
+      "username":"Testusername"
+    },
+    "text":"Watch List"
+  }
+}
+
+### Get webhook info
+GET https://api.telegram.org/bot<token>/getWebhookInfo HTTP/1.1
+
+### Set webhook
+POST https://api.telegram.org/bot<token>/setWebhook HTTP/1.1
+Content-Type: application/json
+
+{
+  "url": "https://domain.com/webhook",
+  "secret_token": "webhook_secret_token",
+  "max_connections": 50,
+  "drop_pending_updates": true,
+  "allowed_updates": ["message", "callback_query"]
+}
