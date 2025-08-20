@@ -7,11 +7,11 @@ type TelegramUpdate struct {
 }
 
 type TelegramResponse struct {
-	Method             string                      `json:"method"`
+	Method             string                      `json:"method,omitempty"`
 	MessageId          int64                       `json:"message_id,omitempty"`
-	ChatId             int64                       `json:"chat_id"`
-	ParseMode          string                      `json:"parse_mode"`
-	Text               string                      `json:"text"`
+	ChatId             int64                       `json:"chat_id,omitempty"`
+	ParseMode          string                      `json:"parse_mode,omitempty"`
+	Text               string                      `json:"text,omitempty"`
 	ReplyMarkup        any                         `json:"reply_markup,omitempty"`
 	LinkPreviewOptions *TelegramLinkPreviewOptions `json:"link_preview_options,omitempty"`
 }

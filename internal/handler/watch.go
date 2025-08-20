@@ -12,6 +12,7 @@ import (
 	"github.com/fidrasofyan/version-watcher-bot/database"
 	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
+	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -87,6 +88,15 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			if err != nil {
 				return nil, custom_error.NewError(err)
 			}
+
+			// Answer callback query
+			err = service.AnswerCallbackQuery(&service.AnswerCallbackQueryParams{
+				CallbackQueryId: req.CallbackQuery.Id,
+			})
+			if err != nil {
+				return nil, custom_error.NewError(err)
+			}
+
 			return &types.TelegramResponse{
 				Method:    "editMessageText",
 				MessageId: req.CallbackQuery.Message.MessageId,
@@ -178,12 +188,14 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 
 	// Step 3
 	case 3:
+		// It must be callback query
 		if req.CallbackQuery.Data == "" {
 			// Delete chat
 			err := repository.TelegramDeleteChat(ctx, chatId)
 			if err != nil {
 				return nil, custom_error.NewError(err)
 			}
+
 			return &types.TelegramResponse{
 				Method:    "sendMessage",
 				ChatId:    chatId,
@@ -198,6 +210,15 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			if err != nil {
 				return nil, custom_error.NewError(err)
 			}
+
+			// Answer callback query
+			err = service.AnswerCallbackQuery(&service.AnswerCallbackQueryParams{
+				CallbackQueryId: req.CallbackQuery.Id,
+			})
+			if err != nil {
+				return nil, custom_error.NewError(err)
+			}
+
 			return &types.TelegramResponse{
 				Method:    "editMessageText",
 				MessageId: req.CallbackQuery.Message.MessageId,
@@ -234,6 +255,14 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 				return nil, custom_error.NewError(err)
 			}
 
+			// Answer callback query
+			err = service.AnswerCallbackQuery(&service.AnswerCallbackQueryParams{
+				CallbackQueryId: req.CallbackQuery.Id,
+			})
+			if err != nil {
+				return nil, custom_error.NewError(err)
+			}
+
 			return &types.TelegramResponse{
 				Method:    "editMessageText",
 				MessageId: req.CallbackQuery.Message.MessageId,
@@ -255,6 +284,14 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 
 		// Delete chat
 		err = repository.TelegramDeleteChat(ctx, chatId)
+		if err != nil {
+			return nil, custom_error.NewError(err)
+		}
+
+		// Answer callback query
+		err = service.AnswerCallbackQuery(&service.AnswerCallbackQueryParams{
+			CallbackQueryId: req.CallbackQuery.Id,
+		})
 		if err != nil {
 			return nil, custom_error.NewError(err)
 		}

@@ -8,6 +8,7 @@ import (
 	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/handler"
 	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
+	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 	"github.com/gofiber/fiber/v2"
 )
@@ -110,6 +111,14 @@ func Handler() fiber.Handler {
 			if req.CallbackQuery.Id != "" {
 				// Delete chat
 				err := repository.TelegramDeleteChat(c.Context(), chatId)
+				if err != nil {
+					return custom_error.NewError(err)
+				}
+
+				// Answer callback query
+				err = service.AnswerCallbackQuery(&service.AnswerCallbackQueryParams{
+					CallbackQueryId: req.CallbackQuery.Id,
+				})
 				if err != nil {
 					return custom_error.NewError(err)
 				}

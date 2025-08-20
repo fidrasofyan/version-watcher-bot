@@ -40,6 +40,35 @@ func SendMessage(params *SendMessageParams) error {
 	return nil
 }
 
+type AnswerCallbackQueryParams struct {
+	CallbackQueryId string  `json:"callback_query_id"`
+	Text            *string `json:"text,omitempty"`
+	ShowAlert       *bool   `json:"show_alert,omitempty"`
+}
+
+func AnswerCallbackQuery(params *AnswerCallbackQueryParams) error {
+	url := fmt.Sprintf("https://api.telegram.org/bot%s/answerCallbackQuery", config.Cfg.TelegramBotToken)
+	jsonData, err := sonic.Marshal(params)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
 func SetWebhook() error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/setWebhook", config.Cfg.TelegramBotToken)
 	data := struct {
