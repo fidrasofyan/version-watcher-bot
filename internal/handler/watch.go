@@ -37,7 +37,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 
 	if chat == nil {
 		// Create new chat
-		chat, err = repository.TelegramSetChat(ctx, repository.TelegramSetChatParams{
+		chat, err = repository.TelegramSetChat(ctx, &repository.TelegramSetChatParams{
 			ID:      chatId,
 			Command: command,
 			Step:    1,
@@ -51,7 +51,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 	// Step 1
 	case 1:
 		// Set step
-		_, err := repository.TelegramSetChat(ctx, repository.TelegramSetChatParams{
+		_, err := repository.TelegramSetChat(ctx, &repository.TelegramSetChatParams{
 			ID:      chatId,
 			Command: command,
 			Step:    2,
@@ -167,7 +167,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 		}
 
 		// Set step
-		_, err = repository.TelegramSetChat(ctx, repository.TelegramSetChatParams{
+		_, err = repository.TelegramSetChat(ctx, &repository.TelegramSetChatParams{
 			ID:      chatId,
 			Command: command,
 			Step:    3,

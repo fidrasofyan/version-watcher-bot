@@ -69,7 +69,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 
 	if chat == nil {
 		// Create new chat
-		chat, err = repository.TelegramSetChat(ctx, repository.TelegramSetChatParams{
+		chat, err = repository.TelegramSetChat(ctx, &repository.TelegramSetChatParams{
 			ID:      chatId,
 			Command: "unwatch_",
 			Step:    1,
@@ -118,7 +118,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 		}
 
 		// Set step
-		_, err = repository.TelegramSetChat(ctx, repository.TelegramSetChatParams{
+		_, err = repository.TelegramSetChat(ctx, &repository.TelegramSetChatParams{
 			ID:      chatId,
 			Command: "unwatch_",
 			Step:    2,

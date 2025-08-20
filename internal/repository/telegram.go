@@ -25,7 +25,7 @@ type TelegramSetChatParams struct {
 	Data    []byte
 }
 
-func TelegramSetChat(ctx context.Context, arg TelegramSetChatParams) (*database.Chat, error) {
+func TelegramSetChat(ctx context.Context, arg *TelegramSetChatParams) (*database.Chat, error) {
 	datetime := time.Now()
 
 	chatExists, err := database.Sqlc.IsChatExists(ctx, arg.ID)
