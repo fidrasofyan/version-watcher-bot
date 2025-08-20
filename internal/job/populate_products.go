@@ -134,14 +134,17 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 			// Insert product_version
 			var version string
 			var versionReleaseDate time.Time
+			var versionReleaseDateValid bool
 			var versionReleaseLink *string
 
 			if release.Latest != nil {
 				version = *release.Latest.Name
 				versionReleaseDate, _ = time.Parse("2006-01-02", *release.Latest.Date)
+				versionReleaseDateValid = true
 				versionReleaseLink = release.Latest.Link
 			} else {
 				version = "-"
+				versionReleaseDateValid = false
 			}
 
 			if release.Custom != nil {
@@ -159,7 +162,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 				ReleaseLabel:       release.Label,
 				ReleaseDate:        pgtype.Timestamp{Time: releaseDate, Valid: true},
 				Version:            version,
-				VersionReleaseDate: pgtype.Timestamp{Time: versionReleaseDate, Valid: true},
+				VersionReleaseDate: pgtype.Timestamp{Time: versionReleaseDate, Valid: versionReleaseDateValid},
 				VersionReleaseLink: versionReleaseLink,
 				CreatedAt:          pgtype.Timestamp{Time: datetime, Valid: true},
 			})
