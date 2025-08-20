@@ -35,55 +35,47 @@ func (q *Queries) CreateWatchList(ctx context.Context, arg *CreateWatchListParam
 	return &i, err
 }
 
-const getWatchLists = `-- name: GetWatchLists :many
+const deleteWatchList = `-- name: DeleteWatchList :exec
+DELETE FROM watch_lists 
+WHERE chat_id = $1 
+AND product_id = $2
+`
+
+type DeleteWatchListParams struct {
+	ChatID    int64
+	ProductID int32
+}
+
+func (q *Queries) DeleteWatchList(ctx context.Context, arg *DeleteWatchListParams) error {
+	_, err := q.db.Exec(ctx, deleteWatchList, arg.ChatID, arg.ProductID)
+	return err
+}
+
+const getWatchList = `-- name: GetWatchList :many
 SELECT 
-  p.id AS product_id,
-  p.label AS product_label,
-  p.eol_url AS product_eol_url,
-  json_agg(
-    json_build_object(
-      'release_label', pv.release_label,
-      'version', pv.version,
-      'version_release_date', pv.version_release_date,
-      'version_release_link', pv.version_release_link
-    )
-  ) AS product_versions
+  p.name AS product_name, 
+  p.label AS product_label
 FROM watch_lists wl
 JOIN products p ON wl.product_id = p.id
-LEFT JOIN LATERAL (
-  SELECT release_label, version, version_release_date, version_release_link
-  FROM product_versions
-  WHERE product_id = p.id
-  ORDER BY version_release_date DESC NULLS LAST, release_date DESC NULLS LAST
-  LIMIT 1
-) pv ON true
 WHERE wl.chat_id = $1
-GROUP BY p.id
 ORDER BY p.label ASC NULLS LAST
 `
 
-type GetWatchListsRow struct {
-	ProductID       int32
-	ProductLabel    string
-	ProductEolUrl   string
-	ProductVersions []byte
+type GetWatchListRow struct {
+	ProductName  string
+	ProductLabel string
 }
 
-func (q *Queries) GetWatchLists(ctx context.Context, chatID int64) ([]*GetWatchListsRow, error) {
-	rows, err := q.db.Query(ctx, getWatchLists, chatID)
+func (q *Queries) GetWatchList(ctx context.Context, chatID int64) ([]*GetWatchListRow, error) {
+	rows, err := q.db.Query(ctx, getWatchList, chatID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []*GetWatchListsRow{}
+	items := []*GetWatchListRow{}
 	for rows.Next() {
-		var i GetWatchListsRow
-		if err := rows.Scan(
-			&i.ProductID,
-			&i.ProductLabel,
-			&i.ProductEolUrl,
-			&i.ProductVersions,
-		); err != nil {
+		var i GetWatchListRow
+		if err := rows.Scan(&i.ProductName, &i.ProductLabel); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -117,6 +109,65 @@ func (q *Queries) GetWatchListsGroupedByChat(ctx context.Context) ([]*GetWatchLi
 	for rows.Next() {
 		var i GetWatchListsGroupedByChatRow
 		if err := rows.Scan(&i.ChatID, &i.ProductIds); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getWatchListsWithProductVersions = `-- name: GetWatchListsWithProductVersions :many
+SELECT 
+  p.id AS product_id,
+  p.label AS product_label,
+  p.eol_url AS product_eol_url,
+  json_agg(
+    json_build_object(
+      'release_label', pv.release_label,
+      'version', pv.version,
+      'version_release_date', pv.version_release_date,
+      'version_release_link', pv.version_release_link
+    )
+  ) AS product_versions
+FROM watch_lists wl
+JOIN products p ON wl.product_id = p.id
+LEFT JOIN LATERAL (
+  SELECT release_label, version, version_release_date, version_release_link
+  FROM product_versions
+  WHERE product_id = p.id
+  ORDER BY version_release_date DESC NULLS LAST, release_date DESC NULLS LAST
+  LIMIT 1
+) pv ON true
+WHERE wl.chat_id = $1
+GROUP BY p.id
+ORDER BY p.label ASC NULLS LAST
+`
+
+type GetWatchListsWithProductVersionsRow struct {
+	ProductID       int32
+	ProductLabel    string
+	ProductEolUrl   string
+	ProductVersions []byte
+}
+
+func (q *Queries) GetWatchListsWithProductVersions(ctx context.Context, chatID int64) ([]*GetWatchListsWithProductVersionsRow, error) {
+	rows, err := q.db.Query(ctx, getWatchListsWithProductVersions, chatID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*GetWatchListsWithProductVersionsRow{}
+	for rows.Next() {
+		var i GetWatchListsWithProductVersionsRow
+		if err := rows.Scan(
+			&i.ProductID,
+			&i.ProductLabel,
+			&i.ProductEolUrl,
+			&i.ProductVersions,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)

@@ -53,6 +53,7 @@ func main() {
 	case "start":
 		go func() {
 			if config.Cfg.AppEnv == "production" {
+				log.Println("Setting webhook and commands...")
 				// Set webhook
 				err := service.SetWebhook()
 				if err != nil {
@@ -74,6 +75,8 @@ func main() {
 				if err != nil {
 					errCh <- fmt.Errorf("setting commands: %v", err)
 				}
+
+				log.Println("DONE: setting webhook and commands")
 			}
 
 			// Start cron job

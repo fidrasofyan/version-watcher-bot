@@ -3,13 +3,27 @@ INSERT INTO watch_lists (chat_id, product_id, created_at)
 VALUES ($1, $2, $3) 
 RETURNING *;
 
+-- name: DeleteWatchList :exec
+DELETE FROM watch_lists 
+WHERE chat_id = $1 
+AND product_id = $2;
+
 -- name: IsWatchListExists :one
 SELECT EXISTS(
 SELECT 1 FROM watch_lists 
 WHERE chat_id = $1 AND product_id = $2
 LIMIT 1);
 
--- name: GetWatchLists :many
+-- name: GetWatchList :many
+SELECT 
+  p.name AS product_name, 
+  p.label AS product_label
+FROM watch_lists wl
+JOIN products p ON wl.product_id = p.id
+WHERE wl.chat_id = $1
+ORDER BY p.label ASC NULLS LAST;
+
+-- name: GetWatchListsWithProductVersions :many
 SELECT 
   p.id AS product_id,
   p.label AS product_label,

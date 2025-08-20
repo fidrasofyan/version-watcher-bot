@@ -32,7 +32,7 @@ func LoadDatabase() error {
 
 	Pool, err = pgxpool.NewWithConfig(ctx, pgxConfig)
 	if err != nil {
-		return fmt.Errorf("unable to connect to database: %v\n", err)
+		return fmt.Errorf("unable to connect to database: %v", err)
 	}
 	config := Pool.Config()
 

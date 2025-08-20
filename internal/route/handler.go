@@ -8,7 +8,6 @@ import (
 	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/handler"
 	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
-	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 	"github.com/gofiber/fiber/v2"
 )
@@ -105,40 +104,30 @@ func Handler() fiber.Handler {
 			}
 			return c.Status(200).JSON(resp)
 
+		// Unwatch
+		case "unwatch":
+			resp, err := handler.UnwatchStep1(c.Context(), req)
+			if err != nil || resp == nil {
+				return custom_error.NewError(err)
+			}
+			return c.Status(200).JSON(resp)
+
 		// Not found
 		default:
-			// Is it callback query?
-			if req.CallbackQuery.Id != "" {
-				// Delete chat
-				err := repository.TelegramDeleteChat(c.Context(), chatId)
-				if err != nil {
+			if strings.HasPrefix(command, "unwatch_") {
+				resp, err := handler.UnwatchStep2(c.Context(), req)
+				if err != nil || resp == nil {
 					return custom_error.NewError(err)
 				}
-
-				// Answer callback query
-				err = service.AnswerCallbackQuery(&service.AnswerCallbackQueryParams{
-					CallbackQueryId: req.CallbackQuery.Id,
-				})
-				if err != nil {
-					return custom_error.NewError(err)
-				}
-
-				return c.Status(200).JSON(types.TelegramResponse{
-					Method:    "editMessageText",
-					MessageId: req.CallbackQuery.Message.MessageId,
-					ChatId:    chatId,
-					ParseMode: "HTML",
-					Text:      "<i>Invalid session</i>",
-				})
+				return c.Status(200).JSON(resp)
 			}
 
-			return c.Status(200).JSON(&types.TelegramResponse{
-				Method:      "sendMessage",
-				ChatId:      req.Message.Chat.Id,
-				ParseMode:   "HTML",
-				Text:        "<i>Unknown command</i>",
-				ReplyMarkup: types.DefaultReplyMarkup,
-			})
+			resp, err := handler.NotFound(c.Context(), req)
+			if err != nil || resp == nil {
+				return custom_error.NewError(err)
+			}
+			return c.Status(200).JSON(resp)
+
 		}
 	}
 }

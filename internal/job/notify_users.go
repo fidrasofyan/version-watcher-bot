@@ -3,6 +3,7 @@ package job
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/bytedance/sonic"
 	"github.com/fidrasofyan/version-watcher-bot/database"
@@ -111,7 +112,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 				for _, pv := range p.ProductVersions {
 					text += fmt.Sprintf("Version: <code>%s</code> | Label: %s\n", pv.Version, pv.ReleaseLabel)
 
-					if pv.VersionReleaseDate.Valid == true {
+					if pv.VersionReleaseDate.Valid {
 						text += fmt.Sprintf("• Release: %s\n", pv.VersionReleaseDate.Time.Format("2 Jan 2006"))
 					} else {
 						text += "• Release: -\n"
@@ -147,11 +148,8 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 func filterProducts(products []product, productIds []int32) []product {
 	filteredProducts := make([]product, 0, len(productIds))
 	for _, p := range products {
-		for _, id := range productIds {
-			if p.ProductId == id {
-				filteredProducts = append(filteredProducts, p)
-				break
-			}
+		if slices.Contains(productIds, p.ProductId) {
+			filteredProducts = append(filteredProducts, p)
 		}
 	}
 	return filteredProducts

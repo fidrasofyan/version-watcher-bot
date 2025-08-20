@@ -20,6 +20,14 @@ WHERE label ILIKE $1
 ORDER BY label ASC NULLS LAST
 LIMIT 100;
 
+-- name: GetWatchedProductByName :one
+SELECT p.id, p.label
+FROM products p
+INNER JOIN watch_lists wl ON wl.product_id = p.id
+WHERE p.name = $1
+AND wl.chat_id = $2
+LIMIT 1;
+
 -- name: GetWatchedProducts :many
 SELECT products.id, products.name, MIN(products.api_url) AS api_url
 FROM products

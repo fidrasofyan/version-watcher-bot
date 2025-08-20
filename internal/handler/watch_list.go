@@ -19,7 +19,7 @@ type productVersion struct {
 }
 
 func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramResponse, error) {
-	watchLists, err := database.Sqlc.GetWatchLists(ctx, req.Message.Chat.Id)
+	watchLists, err := database.Sqlc.GetWatchListsWithProductVersions(ctx, req.Message.Chat.Id)
 	if err != nil {
 		return nil, custom_error.NewError(err)
 	}
@@ -49,7 +49,7 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 		}
 
 		for _, pv := range productVersions {
-			if pv.VersionReleaseDate.Valid == true {
+			if pv.VersionReleaseDate.Valid {
 				text += fmt.Sprintf("• Latest: %s - %s\n", pv.Version, pv.VersionReleaseDate.Time.Format("2 Jan 2006"))
 			} else {
 				text += "• Latest release: -\n"

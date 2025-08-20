@@ -143,6 +143,32 @@ func (q *Queries) GetProductsWithNewReleases(ctx context.Context, arg *GetProduc
 	return items, nil
 }
 
+const getWatchedProductByName = `-- name: GetWatchedProductByName :one
+SELECT p.id, p.label
+FROM products p
+INNER JOIN watch_lists wl ON wl.product_id = p.id
+WHERE p.name = $1
+AND wl.chat_id = $2
+LIMIT 1
+`
+
+type GetWatchedProductByNameParams struct {
+	Name   string
+	ChatID int64
+}
+
+type GetWatchedProductByNameRow struct {
+	ID    int32
+	Label string
+}
+
+func (q *Queries) GetWatchedProductByName(ctx context.Context, arg *GetWatchedProductByNameParams) (*GetWatchedProductByNameRow, error) {
+	row := q.db.QueryRow(ctx, getWatchedProductByName, arg.Name, arg.ChatID)
+	var i GetWatchedProductByNameRow
+	err := row.Scan(&i.ID, &i.Label)
+	return &i, err
+}
+
 const getWatchedProducts = `-- name: GetWatchedProducts :many
 SELECT products.id, products.name, MIN(products.api_url) AS api_url
 FROM products
