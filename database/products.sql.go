@@ -12,7 +12,7 @@ import (
 )
 
 const getProductById = `-- name: GetProductById :one
-SELECT id, name, label, category, uri, created_at
+SELECT id, name, label, category, api_url, created_at
 FROM products WHERE id = $1 LIMIT 1
 `
 
@@ -21,7 +21,7 @@ type GetProductByIdRow struct {
 	Name      string
 	Label     string
 	Category  string
-	Uri       string
+	ApiUrl    string
 	CreatedAt pgtype.Timestamp
 }
 
@@ -33,14 +33,14 @@ func (q *Queries) GetProductById(ctx context.Context, id int32) (*GetProductById
 		&i.Name,
 		&i.Label,
 		&i.Category,
-		&i.Uri,
+		&i.ApiUrl,
 		&i.CreatedAt,
 	)
 	return &i, err
 }
 
 const getProductsByLabel = `-- name: GetProductsByLabel :many
-SELECT id, name, label, uri
+SELECT id, name, label, api_url
 FROM products 
 WHERE label ILIKE $1 
 ORDER BY label ASC NULLS LAST
@@ -48,10 +48,10 @@ LIMIT 100
 `
 
 type GetProductsByLabelRow struct {
-	ID    int32
-	Name  string
-	Label string
-	Uri   string
+	ID     int32
+	Name   string
+	Label  string
+	ApiUrl string
 }
 
 func (q *Queries) GetProductsByLabel(ctx context.Context, label string) ([]*GetProductsByLabelRow, error) {
@@ -67,7 +67,7 @@ func (q *Queries) GetProductsByLabel(ctx context.Context, label string) ([]*GetP
 			&i.ID,
 			&i.Name,
 			&i.Label,
-			&i.Uri,
+			&i.ApiUrl,
 		); err != nil {
 			return nil, err
 		}
@@ -83,6 +83,7 @@ const getProductsWithNewReleases = `-- name: GetProductsWithNewReleases :many
 SELECT 
   p.id AS product_id,
   p.label AS product_label, 
+  p.eol_url AS product_eol_url,
   jsonb_agg(
     jsonb_build_object(
       'release_label', pv.release_label,
@@ -113,6 +114,7 @@ type GetProductsWithNewReleasesParams struct {
 type GetProductsWithNewReleasesRow struct {
 	ProductID       int32
 	ProductLabel    string
+	ProductEolUrl   string
 	ProductVersions []byte
 }
 
@@ -125,7 +127,12 @@ func (q *Queries) GetProductsWithNewReleases(ctx context.Context, arg *GetProduc
 	items := []*GetProductsWithNewReleasesRow{}
 	for rows.Next() {
 		var i GetProductsWithNewReleasesRow
-		if err := rows.Scan(&i.ProductID, &i.ProductLabel, &i.ProductVersions); err != nil {
+		if err := rows.Scan(
+			&i.ProductID,
+			&i.ProductLabel,
+			&i.ProductEolUrl,
+			&i.ProductVersions,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -137,16 +144,16 @@ func (q *Queries) GetProductsWithNewReleases(ctx context.Context, arg *GetProduc
 }
 
 const getWatchedProducts = `-- name: GetWatchedProducts :many
-SELECT products.id, products.name, MIN(products.uri) AS uri
+SELECT products.id, products.name, MIN(products.api_url) AS api_url
 FROM products
 INNER JOIN watch_lists ON watch_lists.product_id = products.id
 GROUP BY products.id
 `
 
 type GetWatchedProductsRow struct {
-	ID   int32
-	Name string
-	Uri  interface{}
+	ID     int32
+	Name   string
+	ApiUrl interface{}
 }
 
 func (q *Queries) GetWatchedProducts(ctx context.Context) ([]*GetWatchedProductsRow, error) {
@@ -158,7 +165,7 @@ func (q *Queries) GetWatchedProducts(ctx context.Context) ([]*GetWatchedProducts
 	items := []*GetWatchedProductsRow{}
 	for rows.Next() {
 		var i GetWatchedProductsRow
-		if err := rows.Scan(&i.ID, &i.Name, &i.Uri); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.ApiUrl); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -170,13 +177,14 @@ func (q *Queries) GetWatchedProducts(ctx context.Context) ([]*GetWatchedProducts
 }
 
 const upsertProduct = `-- name: UpsertProduct :exec
-INSERT INTO products (name, label, category, uri, created_at) 
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO products (name, label, category, api_url, eol_url, created_at) 
+VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT(name) DO UPDATE SET 
   name = excluded.name,
   label = excluded.label,
   category = excluded.category,
-  uri = excluded.uri, 
+  api_url = excluded.api_url, 
+  eol_url = excluded.eol_url,
   updated_at = excluded.created_at
 `
 
@@ -184,7 +192,8 @@ type UpsertProductParams struct {
 	Name      string
 	Label     string
 	Category  string
-	Uri       string
+	ApiUrl    string
+	EolUrl    string
 	CreatedAt pgtype.Timestamp
 }
 
@@ -193,7 +202,8 @@ func (q *Queries) UpsertProduct(ctx context.Context, arg *UpsertProductParams) e
 		arg.Name,
 		arg.Label,
 		arg.Category,
-		arg.Uri,
+		arg.ApiUrl,
+		arg.EolUrl,
 		arg.CreatedAt,
 	)
 	return err

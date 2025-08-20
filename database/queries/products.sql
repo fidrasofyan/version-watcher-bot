@@ -1,26 +1,27 @@
 -- name: UpsertProduct :exec
-INSERT INTO products (name, label, category, uri, created_at) 
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO products (name, label, category, api_url, eol_url, created_at) 
+VALUES ($1, $2, $3, $4, $5, $6)
 ON CONFLICT(name) DO UPDATE SET 
   name = excluded.name,
   label = excluded.label,
   category = excluded.category,
-  uri = excluded.uri, 
+  api_url = excluded.api_url, 
+  eol_url = excluded.eol_url,
   updated_at = excluded.created_at;
 
 -- name: GetProductById :one
-SELECT id, name, label, category, uri, created_at
+SELECT id, name, label, category, api_url, created_at
 FROM products WHERE id = $1 LIMIT 1;
 
 -- name: GetProductsByLabel :many
-SELECT id, name, label, uri
+SELECT id, name, label, api_url
 FROM products 
 WHERE label ILIKE $1 
 ORDER BY label ASC NULLS LAST
 LIMIT 100;
 
 -- name: GetWatchedProducts :many
-SELECT products.id, products.name, MIN(products.uri) AS uri
+SELECT products.id, products.name, MIN(products.api_url) AS api_url
 FROM products
 INNER JOIN watch_lists ON watch_lists.product_id = products.id
 GROUP BY products.id;
@@ -29,6 +30,7 @@ GROUP BY products.id;
 SELECT 
   p.id AS product_id,
   p.label AS product_label, 
+  p.eol_url AS product_eol_url,
   jsonb_agg(
     jsonb_build_object(
       'release_label', pv.release_label,

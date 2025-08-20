@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/bytedance/sonic"
@@ -94,7 +95,8 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 			Name:      p.Name,
 			Label:     p.Label,
 			Category:  p.Category,
-			Uri:       p.URI,
+			ApiUrl:    p.URI,
+			EolUrl:    strings.Replace(p.URI, "/api/v1/products/", "/", 1),
 			CreatedAt: pgtype.Timestamp{Time: datetime, Valid: true},
 		})
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
@@ -119,7 +121,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 		if config.Cfg.AppEnv == "development" {
 			log.Printf("Fetching product %s...", wp.Name)
 		}
-		fetchProductResp, err := http.Get(wp.Uri.(string))
+		fetchProductResp, err := http.Get(wp.ApiUrl.(string))
 		if err != nil {
 			return nil, custom_error.NewError(err)
 		}

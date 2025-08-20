@@ -26,7 +26,8 @@ CREATE TABLE products (
   name varchar(100) NOT NULL,
   label varchar(100) NOT NULL,
   category varchar(100) NOT NULL,
-  uri varchar(2048) NOT NULL,
+  api_url varchar(2048) NOT NULL,
+  eol_url varchar(2048) NOT NULL,
   created_at timestamp NOT NULL,
   updated_at timestamp
 );

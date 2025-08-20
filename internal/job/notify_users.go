@@ -21,6 +21,7 @@ type productVersion struct {
 type product struct {
 	ProductId       int32
 	ProductLabel    string
+	ProductEolUrl   string
 	ProductVersions []productVersion
 }
 
@@ -64,6 +65,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 			products[i] = product{
 				ProductId:       p.ProductID,
 				ProductLabel:    p.ProductLabel,
+				ProductEolUrl:   p.ProductEolUrl,
 				ProductVersions: productVersions,
 			}
 		}
@@ -103,7 +105,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 
 			for _, p := range filteredProducts {
 				// Set title
-				text += fmt.Sprintf("# <b>%s</b>\n", p.ProductLabel)
+				text += fmt.Sprintf("# <b>%s</b> - <a href=\"%s\">source</a>\n", p.ProductLabel, p.ProductEolUrl)
 
 				// Set product versions
 				for _, pv := range p.ProductVersions {

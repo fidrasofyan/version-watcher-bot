@@ -22,7 +22,8 @@ type Product struct {
 	Name      string
 	Label     string
 	Category  string
-	Uri       string
+	ApiUrl    string
+	EolUrl    string
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }

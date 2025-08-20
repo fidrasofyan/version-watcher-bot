@@ -38,7 +38,7 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 
 	for _, watchList := range watchLists {
 		// Set title
-		text += fmt.Sprintf("# <b>%s</b>\n", watchList.ProductLabel)
+		text += fmt.Sprintf("# <b>%s</b> - <a href=\"%s\">source</a>\n", watchList.ProductLabel, watchList.ProductEolUrl)
 
 		// Set product versions
 		productVersions := []productVersion{}
@@ -58,7 +58,7 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 			}
 
 			if pv.VersionReleaseLink != nil && *pv.VersionReleaseLink != "" {
-				text += fmt.Sprintf("• Changelog: <a href=\"%s\">%s</a>\n", *pv.VersionReleaseLink, "link")
+				text += fmt.Sprintf("• Changelog: <a href=\"%s\">link</a>\n", *pv.VersionReleaseLink)
 			} else {
 				text += "• Changelog: -\n"
 			}

@@ -11,7 +11,9 @@ LIMIT 1);
 
 -- name: GetWatchLists :many
 SELECT 
+  p.id AS product_id,
   p.label AS product_label,
+  p.eol_url AS product_eol_url,
   json_agg(
     json_build_object(
       'release_label', pv.release_label,
@@ -30,7 +32,7 @@ LEFT JOIN LATERAL (
   LIMIT 1
 ) pv ON true
 WHERE wl.chat_id = $1
-GROUP BY p.label
+GROUP BY p.id
 ORDER BY p.label ASC NULLS LAST;
 
 -- name: GetWatchListsGroupedByChat :many

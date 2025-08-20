@@ -37,7 +37,9 @@ func (q *Queries) CreateWatchList(ctx context.Context, arg *CreateWatchListParam
 
 const getWatchLists = `-- name: GetWatchLists :many
 SELECT 
+  p.id AS product_id,
   p.label AS product_label,
+  p.eol_url AS product_eol_url,
   json_agg(
     json_build_object(
       'release_label', pv.release_label,
@@ -56,12 +58,14 @@ LEFT JOIN LATERAL (
   LIMIT 1
 ) pv ON true
 WHERE wl.chat_id = $1
-GROUP BY p.label
+GROUP BY p.id
 ORDER BY p.label ASC NULLS LAST
 `
 
 type GetWatchListsRow struct {
+	ProductID       int32
 	ProductLabel    string
+	ProductEolUrl   string
 	ProductVersions []byte
 }
 
@@ -74,7 +78,12 @@ func (q *Queries) GetWatchLists(ctx context.Context, chatID int64) ([]*GetWatchL
 	items := []*GetWatchListsRow{}
 	for rows.Next() {
 		var i GetWatchListsRow
-		if err := rows.Scan(&i.ProductLabel, &i.ProductVersions); err != nil {
+		if err := rows.Scan(
+			&i.ProductID,
+			&i.ProductLabel,
+			&i.ProductEolUrl,
+			&i.ProductVersions,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)

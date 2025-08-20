@@ -260,7 +260,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 		}
 
 		text := fmt.Sprintf("✅ %s added to watch list\n\n", product.Label)
-		text += "<i>*You'll be notified of new product versions</i>"
+		text += "<i>*You'll be notified when a new version is released</i>"
 
 		return &types.TelegramResponse{
 			Method:    "editMessageText",
