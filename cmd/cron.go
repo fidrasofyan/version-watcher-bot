@@ -20,7 +20,7 @@ func startCronJob(ctx context.Context) (*cron.Cron, error) {
 		}
 	}()
 
-	_, err := c.AddFunc("*/10 * * * *", job.NewNotifyUsers(ctx, errCh))
+	_, err := c.AddFunc("*/15 * * * *", job.NewNotifyUsers(ctx, errCh))
 	if err != nil {
 		return nil, fmt.Errorf("error adding function: %v", err)
 	}
