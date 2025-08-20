@@ -49,10 +49,8 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 		}
 
 		for _, pv := range productVersions {
-			text += fmt.Sprintf("Version: <code>%s</code> | Label: %s\n", pv.Version, pv.ReleaseLabel)
-
 			if pv.VersionReleaseDate.Valid == true {
-				text += fmt.Sprintf("• Latest release: %s\n", pv.VersionReleaseDate.Time.Format("2 Jan 2006"))
+				text += fmt.Sprintf("• Latest: v%s - %s\n", pv.Version, pv.VersionReleaseDate.Time.Format("2 Jan 2006"))
 			} else {
 				text += "• Latest release: -\n"
 			}
