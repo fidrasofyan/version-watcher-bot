@@ -44,14 +44,15 @@ CREATE TABLE product_versions (
   release_codename varchar(100),
   release_label varchar(100) NOT NULL,
   release_date timestamp,
-  version varchar(20),
+  version varchar(20) NOT NULL,
   version_release_date timestamp,
   version_release_link varchar(2048),
   created_at timestamp NOT NULL
 );
 
 CREATE INDEX idx_product_versions_product_id ON product_versions(product_id);
-CREATE UNIQUE INDEX idx_product_versions_version_product_id ON product_versions(version, product_id);
+CREATE UNIQUE INDEX idx_product_versions_version_release_name_product_id 
+ON product_versions(version, release_name, product_id);
 CREATE INDEX idx_product_versions_version_release_date ON product_versions(version_release_date);
 CREATE INDEX idx_product_versions_created_at ON product_versions(created_at);
 

@@ -34,7 +34,7 @@ type ProductVersion struct {
 	ReleaseCodename    *string
 	ReleaseLabel       string
 	ReleaseDate        pgtype.Timestamp
-	Version            *string
+	Version            string
 	VersionReleaseDate pgtype.Timestamp
 	VersionReleaseLink *string
 	CreatedAt          pgtype.Timestamp

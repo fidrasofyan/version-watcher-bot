@@ -11,7 +11,7 @@ INSERT INTO product_versions (
   created_at
 ) 
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-ON CONFLICT (version, product_id) DO NOTHING;
+ON CONFLICT (version, release_name, product_id) DO NOTHING;
 
 -- name: GetDistinctProductIdsFromProductVersionsByCreatedAt :many
 SELECT DISTINCT product_id

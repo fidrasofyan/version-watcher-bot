@@ -132,19 +132,21 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 
 		for _, release := range pr.Result.Releases {
 			// Insert product_version
-			var version *string
+			var version string
 			var versionReleaseDate time.Time
 			var versionReleaseLink *string
 
 			if release.Latest != nil {
-				version = release.Latest.Name
+				version = *release.Latest.Name
 				versionReleaseDate, _ = time.Parse("2006-01-02", *release.Latest.Date)
 				versionReleaseLink = release.Latest.Link
+			} else {
+				version = "-"
 			}
 
 			if release.Custom != nil {
 				if release.Custom.APIVersion != nil {
-					version = release.Custom.APIVersion
+					version = *release.Custom.APIVersion
 				}
 			}
 

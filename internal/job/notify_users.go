@@ -12,8 +12,8 @@ import (
 )
 
 type productVersion struct {
-	ReleaseLabel       *string          `json:"release_label"`
-	Version            *string          `json:"version"`
+	ReleaseLabel       string           `json:"release_label"`
+	Version            string           `json:"version"`
 	VersionReleaseDate pgtype.Timestamp `json:"version_release_date"`
 	VersionReleaseLink *string          `json:"version_release_link"`
 }
@@ -107,17 +107,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 
 				// Set product versions
 				for _, pv := range p.ProductVersions {
-					if pv.Version != nil {
-						if pv.ReleaseLabel != nil {
-							text += fmt.Sprintf("Version: <code>%s</code> | Label: %s\n", *pv.Version, *pv.ReleaseLabel)
-						} else {
-							text += fmt.Sprintf("Version: <code>%s</code> | Label: -\n", *pv.Version)
-						}
-					} else {
-						if pv.ReleaseLabel != nil {
-							text += fmt.Sprintf("Version: - | Label: %s\n", *pv.ReleaseLabel)
-						}
-					}
+					text += fmt.Sprintf("Version: <code>%s</code> | Label: %s\n", pv.Version, pv.ReleaseLabel)
 
 					if pv.VersionReleaseDate.Valid == true {
 						text += fmt.Sprintf("• Release: %s\n", pv.VersionReleaseDate.Time.Format("2 Jan 2006"))

@@ -24,7 +24,7 @@ INSERT INTO product_versions (
   created_at
 ) 
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-ON CONFLICT (version, product_id) DO NOTHING
+ON CONFLICT (version, release_name, product_id) DO NOTHING
 `
 
 type CreateProductVersionParams struct {
@@ -33,7 +33,7 @@ type CreateProductVersionParams struct {
 	ReleaseCodename    *string
 	ReleaseLabel       string
 	ReleaseDate        pgtype.Timestamp
-	Version            *string
+	Version            string
 	VersionReleaseDate pgtype.Timestamp
 	VersionReleaseLink *string
 	CreatedAt          pgtype.Timestamp
