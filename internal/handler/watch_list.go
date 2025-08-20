@@ -55,13 +55,12 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 				text += "• Latest release: -\n"
 			}
 
-			if pv.VersionReleaseLink != nil && *pv.VersionReleaseLink != "" {
-				text += fmt.Sprintf("• Changelog: <a href=\"%s\">link</a>\n", *pv.VersionReleaseLink)
-			} else {
-				text += "• Changelog: -\n"
-			}
+			// if pv.VersionReleaseLink != nil && *pv.VersionReleaseLink != "" {
+			// 	text += fmt.Sprintf("• Changelog: <a href=\"%s\">link</a>\n", *pv.VersionReleaseLink)
+			// } else {
+			// 	text += "• Changelog: -\n"
+			// }
 		}
-		text += "\n"
 	}
 
 	// Limit message length
