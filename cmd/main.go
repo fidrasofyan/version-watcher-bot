@@ -52,11 +52,27 @@ func main() {
 	switch os.Args[1] {
 	case "start":
 		go func() {
-			// Set webhook
 			if config.Cfg.AppEnv == "production" {
+				// Set webhook
 				err := service.SetWebhook()
 				if err != nil {
 					errCh <- fmt.Errorf("setting webhook: %v", err)
+				}
+
+				// Set commands
+				commands := []service.Command{
+					{
+						Command:     "/start",
+						Description: "Start the bot",
+					},
+					{
+						Command:     "/watch",
+						Description: "Watch a product",
+					},
+				}
+				err = service.SetMyCommands(commands)
+				if err != nil {
+					errCh <- fmt.Errorf("setting commands: %v", err)
 				}
 			}
 

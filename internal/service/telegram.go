@@ -3,7 +3,6 @@ package service
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/bytedance/sonic"
@@ -42,7 +41,6 @@ func SendMessage(params *SendMessageParams) error {
 }
 
 func SetWebhook() error {
-	log.Println("Setting webhook...")
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/setWebhook", config.Cfg.TelegramBotToken)
 	data := struct {
 		Url                string   `json:"url"`
@@ -75,7 +73,38 @@ func SetWebhook() error {
 	}
 	defer resp.Body.Close()
 
-	log.Println("DONE: set webhook")
+	return nil
+}
+
+type Command struct {
+	Command     string `json:"command"`
+	Description string `json:"description"`
+}
+
+func SetMyCommands(commands []Command) error {
+	url := fmt.Sprintf("https://api.telegram.org/bot%s/setMyCommands", config.Cfg.TelegramBotToken)
+	data := struct {
+		Commands []Command `json:"commands"`
+	}{
+		Commands: commands,
+	}
+	jsonData, err := sonic.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
 
 	return nil
 }
