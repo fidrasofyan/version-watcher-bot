@@ -52,9 +52,9 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 			text += fmt.Sprintf("Version: <code>%s</code> | Label: %s\n", pv.Version, pv.ReleaseLabel)
 
 			if pv.VersionReleaseDate.Valid == true {
-				text += fmt.Sprintf("• Release: %s\n", pv.VersionReleaseDate.Time.Format("2 Jan 2006"))
+				text += fmt.Sprintf("• Latest release: %s\n", pv.VersionReleaseDate.Time.Format("2 Jan 2006"))
 			} else {
-				text += "• Release: -\n"
+				text += "• Latest release: -\n"
 			}
 
 			if pv.VersionReleaseLink != nil && *pv.VersionReleaseLink != "" {

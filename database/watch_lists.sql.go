@@ -38,8 +38,8 @@ func (q *Queries) CreateWatchList(ctx context.Context, arg *CreateWatchListParam
 const getWatchLists = `-- name: GetWatchLists :many
 SELECT 
   p.label AS product_label,
-  jsonb_agg(
-    jsonb_build_object(
+  json_agg(
+    json_build_object(
       'release_label', pv.release_label,
       'version', pv.version,
       'version_release_date', pv.version_release_date,
@@ -48,7 +48,7 @@ SELECT
   ) AS product_versions
 FROM watch_lists wl
 JOIN products p ON wl.product_id = p.id
-JOIN LATERAL (
+LEFT JOIN LATERAL (
   SELECT release_label, version, version_release_date, version_release_link
   FROM product_versions
   WHERE product_id = p.id
