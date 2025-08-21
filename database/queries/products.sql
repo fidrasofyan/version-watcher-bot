@@ -39,8 +39,8 @@ SELECT
   p.id AS product_id,
   p.label AS product_label, 
   p.eol_url AS product_eol_url,
-  jsonb_agg(
-    jsonb_build_object(
+  json_agg(
+    json_build_object(
       'release_label', pv.release_label,
       'version', pv.version,
       'version_release_date', pv.version_release_date,
