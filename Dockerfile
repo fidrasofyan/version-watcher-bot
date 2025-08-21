@@ -1,6 +1,6 @@
 # Stage 1
 FROM golang:1.25.0 AS builder
-ENV CGO_ENABLED=1 \
+ENV CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64
 WORKDIR /app
