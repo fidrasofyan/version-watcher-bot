@@ -11,6 +11,7 @@ import (
 	"github.com/fidrasofyan/version-watcher-bot/database"
 	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
+	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 )
 
@@ -20,29 +21,47 @@ func UnwatchStep1(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 		return nil, custom_error.NewError(err)
 	}
 
-	text := "<b>Watch List</b>\n"
+	textLimit := 3500
+	var textB strings.Builder
+	textB.WriteString("<b>Watch List</b>\n")
 
-	if len(watchList) == 0 {
-		text += "\n<i>No watch list found</i>"
-	} else {
-		if len(watchList) == 1 {
-			text += "<i>You watch 1 product</i>\n\n"
-		} else {
-			text += fmt.Sprintf("<i>You watch %d products</i>\n\n", len(watchList))
+	switch len(watchList) {
+	case 0:
+		textB.WriteString("\n<i>No watch list found</i>")
+	case 1:
+		textB.WriteString("<i>You watch 1 product</i>\n\n")
+	default:
+		textB.WriteString(fmt.Sprintf("<i>You watch %d products</i>\n\n", len(watchList)))
+
+		for _, watchListItem := range watchList {
+			// Normalize product name
+			productName := strings.ReplaceAll(watchListItem.ProductName, "-", "_")
+			textB.WriteString(fmt.Sprintf("• %s - /unwatch_%s\n", watchListItem.ProductLabel, productName))
+
+			// If text is too long, send it part by part
+			if textB.Len() >= textLimit {
+				service.SendMessage(&service.SendMessageParams{
+					ChatId:    req.Message.Chat.Id,
+					ParseMode: "HTML",
+					Text:      textB.String(),
+					LinkPreviewOptions: &types.TelegramLinkPreviewOptions{
+						IsDisabled: true,
+					},
+				})
+				textB.Reset()
+			}
 		}
 	}
 
-	for _, watchListItem := range watchList {
-		// Normalize product name
-		productName := strings.ReplaceAll(watchListItem.ProductName, "-", "_")
-		text += fmt.Sprintf("• %s - /unwatch_%s\n", watchListItem.ProductLabel, productName)
+	if textB.Len() == 0 {
+		return nil, nil
 	}
 
 	return &types.TelegramResponse{
 		Method:    "sendMessage",
 		ChatId:    req.Message.Chat.Id,
 		ParseMode: "HTML",
-		Text:      text,
+		Text:      textB.String(),
 	}, nil
 }
 

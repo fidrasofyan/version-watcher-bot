@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/fidrasofyan/version-watcher-bot/database"
@@ -91,52 +92,59 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 				continue
 			}
 
-			// fmt.Println("Chat ID:", wl.ChatID)
-			// fmt.Println("Filtered products:", filteredProducts)
-			// fmt.Println("Total products:", len(filteredProducts))
-			// fmt.Println("\n")
-
 			// Send notification
-			var text string
+			textLimit := 3500
+			var textB strings.Builder
 			if len(filteredProducts) > 1 {
-				text += "<b>New Releases Detected</b>\n\n"
+				textB.WriteString("<b>New Releases Detected</b>\n\n")
 			} else {
-				text += "<b>New Release Detected</b>\n\n"
+				textB.WriteString("<b>New Release Detected</b>\n\n")
 			}
 
 			for _, p := range filteredProducts {
 				// Set title
-				text += fmt.Sprintf("# <b>%s</b> - <a href=\"%s\">source</a>\n", p.ProductLabel, p.ProductEolUrl)
+				textB.WriteString(fmt.Sprintf("# <b>%s</b> - <a href=\"%s\">source</a>\n", p.ProductLabel, p.ProductEolUrl))
 
 				// Set product versions
 				for _, pv := range p.ProductVersions {
-					text += fmt.Sprintf("Version: <code>%s</code> | Label: %s\n", pv.Version, pv.ReleaseLabel)
+					textB.WriteString(fmt.Sprintf("Version: <code>%s</code> | Label: %s\n", pv.Version, pv.ReleaseLabel))
 
 					if pv.VersionReleaseDate.Valid {
-						text += fmt.Sprintf("• Release: %s\n", pv.VersionReleaseDate.Time.Format("2 Jan 2006"))
+						textB.WriteString(fmt.Sprintf("• Release: %s\n", pv.VersionReleaseDate.Time.Format("2 Jan 2006")))
 					} else {
-						text += "• Release: -\n"
+						textB.WriteString("• Release: -\n")
 					}
 
 					if pv.VersionReleaseLink != nil && *pv.VersionReleaseLink != "" {
-						text += fmt.Sprintf("• Changelog: <a href=\"%s\">%s</a>\n", *pv.VersionReleaseLink, "link")
+						textB.WriteString(fmt.Sprintf("• Changelog: <a href=\"%s\">%s</a>\n", *pv.VersionReleaseLink, "link"))
 					} else {
-						text += "• Changelog: -\n"
+						textB.WriteString("• Changelog: -\n")
 					}
 				}
-				text += "\n"
+				textB.WriteString("\n")
+
+				// If text is too long, send it part by part
+				if textB.Len() >= textLimit {
+					service.SendMessage(&service.SendMessageParams{
+						ChatId:    wl.ChatID,
+						ParseMode: "HTML",
+						Text:      textB.String(),
+						LinkPreviewOptions: &types.TelegramLinkPreviewOptions{
+							IsDisabled: true,
+						},
+					})
+					textB.Reset()
+				}
 			}
 
-			// Limit message length
-			if len(text) > 4000 {
-				text = text[:4000]
-				text += "\n\n<i>--- Part of the message has been truncated ---</i>"
+			if textB.Len() == 0 {
+				return
 			}
 
 			service.SendMessage(&service.SendMessageParams{
 				ChatId:    wl.ChatID,
 				ParseMode: "HTML",
-				Text:      text,
+				Text:      textB.String(),
 				LinkPreviewOptions: &types.TelegramLinkPreviewOptions{
 					IsDisabled: true,
 				},

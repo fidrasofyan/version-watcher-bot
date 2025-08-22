@@ -83,32 +83,44 @@ func Handler() fiber.Handler {
 		// Start
 		case "start":
 			resp, err := handler.Start(c.Context(), req)
-			if err != nil || resp == nil {
+			if err != nil {
 				return custom_error.NewError(err)
+			}
+			if resp == nil {
+				return c.Status(200).Send(nil)
 			}
 			return c.Status(200).JSON(resp)
 
 		// Watch
 		case "watch":
 			resp, err := handler.Watch(c.Context(), req)
-			if err != nil || resp == nil {
+			if err != nil {
 				return custom_error.NewError(err)
+			}
+			if resp == nil {
+				return c.Status(200).Send(nil)
 			}
 			return c.Status(200).JSON(resp)
 
 		// Watch list
 		case "watch list":
 			resp, err := handler.WatchList(c.Context(), req)
-			if err != nil || resp == nil {
+			if err != nil {
 				return custom_error.NewError(err)
+			}
+			if resp == nil {
+				return c.Status(200).Send(nil)
 			}
 			return c.Status(200).JSON(resp)
 
 		// Unwatch
 		case "unwatch":
 			resp, err := handler.UnwatchStep1(c.Context(), req)
-			if err != nil || resp == nil {
+			if err != nil {
 				return custom_error.NewError(err)
+			}
+			if resp == nil {
+				return c.Status(200).Send(nil)
 			}
 			return c.Status(200).JSON(resp)
 
@@ -116,8 +128,11 @@ func Handler() fiber.Handler {
 		default:
 			if strings.HasPrefix(command, "unwatch_") {
 				resp, err := handler.UnwatchStep2(c.Context(), req)
-				if err != nil || resp == nil {
+				if err != nil {
 					return custom_error.NewError(err)
+				}
+				if resp == nil {
+					return c.Status(200).Send(nil)
 				}
 				return c.Status(200).JSON(resp)
 			}

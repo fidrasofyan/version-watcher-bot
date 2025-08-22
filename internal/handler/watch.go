@@ -65,7 +65,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			ChatId:    chatId,
 			ParseMode: "HTML",
 			Text: strings.Join([]string{
-				"<i>What do you want to watch?</i>",
+				"What do you want to watch?",
 				"\n<i>E.g. Ubuntu, Nginx</i>",
 			}, "\n"),
 			ReplyMarkup: types.TelegramInlineKeyboardMarkup{
@@ -296,15 +296,16 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			return nil, custom_error.NewError(err)
 		}
 
-		text := fmt.Sprintf("✅ %s added to watch list\n\n", product.Label)
-		text += "<i>*You'll be notified when a new version is released</i>"
+		var textB strings.Builder
+		textB.WriteString(fmt.Sprintf("✅ %s added to watch list\n\n", product.Label))
+		textB.WriteString("<i>*You'll be notified when a new version is released</i>")
 
 		return &types.TelegramResponse{
 			Method:    "editMessageText",
 			MessageId: req.CallbackQuery.Message.MessageId,
 			ChatId:    chatId,
 			ParseMode: "HTML",
-			Text:      text,
+			Text:      textB.String(),
 		}, nil
 
 	// Unhandled step

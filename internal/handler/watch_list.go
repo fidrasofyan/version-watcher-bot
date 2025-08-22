@@ -3,10 +3,12 @@ package handler
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/fidrasofyan/version-watcher-bot/database"
 	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
+	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 	"github.com/jackc/pgx/v5/pgtype"
 )
@@ -24,21 +26,22 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 		return nil, custom_error.NewError(err)
 	}
 
-	text := "<b>Watch List</b>\n"
+	textLimit := 3500
+	var textB strings.Builder
+	textB.WriteString("<b>Watch List</b>\n")
 
-	if len(watchLists) == 0 {
-		text += "\n<i>No watch list found</i>"
-	} else {
-		if len(watchLists) == 1 {
-			text += "<i>You watch 1 product</i>\n\n"
-		} else {
-			text += fmt.Sprintf("<i>You watch %d products</i>\n\n", len(watchLists))
-		}
+	switch len(watchLists) {
+	case 0:
+		textB.WriteString("\n<i>No watch list found</i>")
+	case 1:
+		textB.WriteString("<i>You watch 1 product</i>\n\n")
+	default:
+		textB.WriteString(fmt.Sprintf("<i>You watch %d products</i>\n\n", len(watchLists)))
 	}
 
 	for _, watchList := range watchLists {
 		// Set title
-		text += fmt.Sprintf("# <b>%s</b> - <a href=\"%s\">source</a>\n", watchList.ProductLabel, watchList.ProductEolUrl)
+		textB.WriteString(fmt.Sprintf("# <b>%s</b> - <a href=\"%s\">source</a>\n", watchList.ProductLabel, watchList.ProductEolUrl))
 
 		// Set product versions
 		productVersions := []productVersion{}
@@ -50,30 +53,33 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 
 		for _, pv := range productVersions {
 			if pv.VersionReleaseDate.Valid {
-				text += fmt.Sprintf("• Latest: %s - %s\n", pv.Version, pv.VersionReleaseDate.Time.Format("2 Jan 2006"))
+				textB.WriteString(fmt.Sprintf("• Latest: %s - %s\n", pv.Version, pv.VersionReleaseDate.Time.Format("2 Jan 2006")))
 			} else {
-				text += "• Latest release: -\n"
+				textB.WriteString("• Latest release: -\n")
 			}
+		}
 
-			// if pv.VersionReleaseLink != nil && *pv.VersionReleaseLink != "" {
-			// 	text += fmt.Sprintf("• Changelog: <a href=\"%s\">link</a>\n", *pv.VersionReleaseLink)
-			// } else {
-			// 	text += "• Changelog: -\n"
-			// }
+		// If text is too long, send it part by part
+		if textB.Len() >= textLimit {
+			service.SendMessage(&service.SendMessageParams{
+				ChatId:             req.Message.Chat.Id,
+				ParseMode:          "HTML",
+				Text:               textB.String(),
+				LinkPreviewOptions: &types.TelegramLinkPreviewOptions{IsDisabled: true},
+			})
+			textB.Reset()
 		}
 	}
 
-	// Limit message length
-	if len(text) > 4000 {
-		text = text[:4000]
-		text += "\n\n<i>--- Part of the message has been truncated ---</i>"
+	if textB.Len() == 0 {
+		return nil, nil
 	}
 
 	return &types.TelegramResponse{
 		Method:      "sendMessage",
 		ChatId:      req.Message.Chat.Id,
 		ParseMode:   "HTML",
-		Text:        text,
+		Text:        textB.String(),
 		ReplyMarkup: types.DefaultReplyMarkup,
 		LinkPreviewOptions: &types.TelegramLinkPreviewOptions{
 			IsDisabled: true,
