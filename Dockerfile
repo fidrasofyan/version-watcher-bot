@@ -10,7 +10,7 @@ COPY . .
 RUN go build -ldflags="-s -w" -o server ./cmd
 
 # Stage 2
-FROM gcr.io/distroless/base-debian12
+FROM gcr.io/distroless/static-debian12
 WORKDIR /app
 COPY --from=builder /app/server .
 USER nonroot:nonroot
