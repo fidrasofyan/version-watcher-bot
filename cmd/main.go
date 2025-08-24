@@ -55,7 +55,7 @@ func main() {
 			if config.Cfg.AppEnv == "production" {
 				log.Println("Setting webhook and commands...")
 				// Set webhook
-				err := service.SetWebhook()
+				err := service.SetWebhook(mainCtx)
 				if err != nil {
 					errCh <- fmt.Errorf("setting webhook: %v", err)
 				}
@@ -71,7 +71,7 @@ func main() {
 						Description: "Watch a product",
 					},
 				}
-				err = service.SetMyCommands(commands)
+				err = service.SetMyCommands(mainCtx, commands)
 				if err != nil {
 					errCh <- fmt.Errorf("setting commands: %v", err)
 				}

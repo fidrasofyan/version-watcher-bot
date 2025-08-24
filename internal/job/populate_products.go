@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -63,19 +64,45 @@ type FetchProductDetailResponse struct {
 	Result        FetchProductDetailResult `json:"result"`
 }
 
+var httpClient = &http.Client{
+	Transport: &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   5 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ForceAttemptHTTP2:   true,
+		MaxIdleConns:        10,
+		MaxIdleConnsPerHost: 10,
+		IdleConnTimeout:     90 * time.Second,
+		TLSHandshakeTimeout: 5 * time.Second,
+	},
+	Timeout: 10 * time.Second,
+}
+
 func PopulateProducts(ctx context.Context) (*time.Time, error) {
 	// Fetch products
 	log.Println("Fetching products...")
-	fetchProductsResp, err := http.Get("https://endoflife.date/api/v1/products")
+
+	fetchProductsReq, err := http.NewRequestWithContext(
+		ctx,
+		"GET",
+		"https://endoflife.date/api/v1/products",
+		nil,
+	)
 	if err != nil {
 		return nil, custom_error.NewError(err)
 	}
-	defer fetchProductsResp.Body.Close()
 
-	var pr FetchProductsResponse
-	if err := sonic.ConfigDefault.NewDecoder(fetchProductsResp.Body).Decode(&pr); err != nil {
+	fetchProductsRes, err := httpClient.Do(fetchProductsReq)
+	if err != nil {
 		return nil, custom_error.NewError(err)
 	}
+
+	var pr FetchProductsResponse
+	if err := sonic.ConfigDefault.NewDecoder(fetchProductsRes.Body).Decode(&pr); err != nil {
+		return nil, custom_error.NewError(err)
+	}
+	fetchProductsRes.Body.Close()
 	log.Println("DONE: fetched products:", pr.Total)
 
 	// Start transaction
@@ -107,6 +134,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 
 	// Populate product_versions based on watch_lists
 	log.Println("Populating product_versions...")
+
 	watchedProducts, err := qtx.GetWatchedProducts(ctx)
 	if err != nil {
 		return nil, custom_error.NewError(err)
@@ -121,16 +149,27 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 		if config.Cfg.AppEnv == "development" {
 			log.Printf("Fetching product %s...", wp.Name)
 		}
-		fetchProductResp, err := http.Get(wp.ApiUrl.(string))
+
+		fetchProductReq, err := http.NewRequestWithContext(
+			ctx,
+			"GET",
+			wp.ApiUrl.(string),
+			nil,
+		)
 		if err != nil {
 			return nil, custom_error.NewError(err)
 		}
-		defer fetchProductResp.Body.Close()
 
-		var pr FetchProductDetailResponse
-		if err := sonic.ConfigDefault.NewDecoder(fetchProductResp.Body).Decode(&pr); err != nil {
+		fetchProductRes, err := httpClient.Do(fetchProductReq)
+		if err != nil {
 			return nil, custom_error.NewError(err)
 		}
+
+		var pr FetchProductDetailResponse
+		if err := sonic.ConfigDefault.NewDecoder(fetchProductRes.Body).Decode(&pr); err != nil {
+			return nil, custom_error.NewError(err)
+		}
+		fetchProductRes.Body.Close()
 
 		for _, release := range pr.Result.Releases {
 			// Insert product_version

@@ -2,8 +2,11 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"net"
 	"net/http"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/fidrasofyan/version-watcher-bot/internal/config"
@@ -17,25 +20,39 @@ type SendMessageParams struct {
 	LinkPreviewOptions *types.TelegramLinkPreviewOptions `json:"link_preview_options,omitempty"`
 }
 
-func SendMessage(params *SendMessageParams) error {
+var httpClient = &http.Client{
+	Transport: &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   5 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).DialContext,
+		ForceAttemptHTTP2:   true,
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90 * time.Second,
+		TLSHandshakeTimeout: 5 * time.Second,
+	},
+	Timeout: 10 * time.Second,
+}
+
+func SendMessage(ctx context.Context, params *SendMessageParams) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", config.Cfg.TelegramBotToken)
 	jsonData, err := sonic.Marshal(params)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	res, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer res.Body.Close()
 
 	return nil
 }
@@ -46,30 +63,29 @@ type AnswerCallbackQueryParams struct {
 	ShowAlert       *bool   `json:"show_alert,omitempty"`
 }
 
-func AnswerCallbackQuery(params *AnswerCallbackQueryParams) error {
+func AnswerCallbackQuery(ctx context.Context, params *AnswerCallbackQueryParams) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/answerCallbackQuery", config.Cfg.TelegramBotToken)
 	jsonData, err := sonic.Marshal(params)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	res, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer res.Body.Close()
 
 	return nil
 }
 
-func SetWebhook() error {
+func SetWebhook(ctx context.Context) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/setWebhook", config.Cfg.TelegramBotToken)
 	data := struct {
 		Url                string   `json:"url"`
@@ -89,18 +105,17 @@ func SetWebhook() error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	res, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer res.Body.Close()
 
 	return nil
 }
@@ -110,7 +125,7 @@ type Command struct {
 	Description string `json:"description"`
 }
 
-func SetMyCommands(commands []Command) error {
+func SetMyCommands(ctx context.Context, commands []Command) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/setMyCommands", config.Cfg.TelegramBotToken)
 	data := struct {
 		Commands []Command `json:"commands"`
@@ -122,18 +137,17 @@ func SetMyCommands(commands []Command) error {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	res, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer res.Body.Close()
 
 	return nil
 }

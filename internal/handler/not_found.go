@@ -19,7 +19,7 @@ func NotFound(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRes
 		}
 
 		// Answer callback query
-		err = service.AnswerCallbackQuery(&service.AnswerCallbackQueryParams{
+		err = service.AnswerCallbackQuery(ctx, &service.AnswerCallbackQueryParams{
 			CallbackQueryId: req.CallbackQuery.Id,
 		})
 		if err != nil {

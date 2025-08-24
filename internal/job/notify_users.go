@@ -125,7 +125,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 
 				// If text is too long, send it part by part
 				if textB.Len() >= textLimit {
-					service.SendMessage(&service.SendMessageParams{
+					service.SendMessage(ctx, &service.SendMessageParams{
 						ChatId:    wl.ChatID,
 						ParseMode: "HTML",
 						Text:      textB.String(),
@@ -141,7 +141,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 				return
 			}
 
-			service.SendMessage(&service.SendMessageParams{
+			service.SendMessage(ctx, &service.SendMessageParams{
 				ChatId:    wl.ChatID,
 				ParseMode: "HTML",
 				Text:      textB.String(),

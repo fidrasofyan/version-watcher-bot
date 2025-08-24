@@ -40,7 +40,7 @@ func UnwatchStep1(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 
 			// If text is too long, send it part by part
 			if textB.Len() >= textLimit {
-				service.SendMessage(&service.SendMessageParams{
+				service.SendMessage(ctx, &service.SendMessageParams{
 					ChatId:    req.Message.Chat.Id,
 					ParseMode: "HTML",
 					Text:      textB.String(),

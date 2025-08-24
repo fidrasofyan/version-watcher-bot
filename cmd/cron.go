@@ -16,7 +16,7 @@ func startCronJob(ctx context.Context) (*cron.Cron, error) {
 	// Listen for errors
 	go func() {
 		for err := range errCh {
-			log.Printf("Error: %v", err)
+			log.Printf("Cron: error: %v", err)
 		}
 	}()
 
