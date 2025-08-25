@@ -1,5 +1,19 @@
 package types
 
+type telegramMethod string
+
+const (
+	TelegramMethodSendMessage     telegramMethod = "sendMessage"
+	TelegramMethodEditMessageText telegramMethod = "editMessageText"
+)
+
+type telegramParseMode string
+
+const (
+	TelegramParseModeHTML       telegramParseMode = "HTML"
+	TelegramParseModeMarkdownV2 telegramParseMode = "MarkdownV2"
+)
+
 type TelegramUpdate struct {
 	UpdateId      int64                 `json:"update_id"`
 	Message       TelegramMessage       `json:"message"`
@@ -7,10 +21,10 @@ type TelegramUpdate struct {
 }
 
 type TelegramResponse struct {
-	Method             string                      `json:"method,omitempty"`
+	Method             telegramMethod              `json:"method,omitempty"`
 	MessageId          int64                       `json:"message_id,omitempty"`
 	ChatId             int64                       `json:"chat_id,omitempty"`
-	ParseMode          string                      `json:"parse_mode,omitempty"`
+	ParseMode          telegramParseMode           `json:"parse_mode,omitempty"`
 	Text               string                      `json:"text,omitempty"`
 	ReplyMarkup        any                         `json:"reply_markup,omitempty"`
 	LinkPreviewOptions *TelegramLinkPreviewOptions `json:"link_preview_options,omitempty"`

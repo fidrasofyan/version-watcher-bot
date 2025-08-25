@@ -61,9 +61,9 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 		}
 
 		return &types.TelegramResponse{
-			Method:    "sendMessage",
+			Method:    types.TelegramMethodSendMessage,
 			ChatId:    chatId,
-			ParseMode: "HTML",
+			ParseMode: types.TelegramParseModeHTML,
 			Text: strings.Join([]string{
 				"What do you want to watch?",
 				"\n<i>E.g. Ubuntu, Nginx</i>",
@@ -98,19 +98,19 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			}
 
 			return &types.TelegramResponse{
-				Method:    "editMessageText",
+				Method:    types.TelegramMethodEditMessageText,
 				MessageId: req.CallbackQuery.Message.MessageId,
 				ChatId:    chatId,
-				ParseMode: "HTML",
+				ParseMode: types.TelegramParseModeHTML,
 				Text:      "<i>Canceled</i>",
 			}, nil
 		}
 
 		if len(req.Message.Text) < 2 {
 			return &types.TelegramResponse{
-				Method:    "sendMessage",
+				Method:    types.TelegramMethodSendMessage,
 				ChatId:    chatId,
-				ParseMode: "HTML",
+				ParseMode: types.TelegramParseModeHTML,
 				Text:      "<i>Keyword must be at least 2 characters</i>",
 				ReplyMarkup: types.TelegramInlineKeyboardMarkup{
 					InlineKeyboard: [][]types.TelegramInlineKeyboardButton{
@@ -132,9 +132,9 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 
 		if len(products) == 0 {
 			return &types.TelegramResponse{
-				Method:    "sendMessage",
+				Method:    types.TelegramMethodSendMessage,
 				ChatId:    chatId,
-				ParseMode: "HTML",
+				ParseMode: types.TelegramParseModeHTML,
 				Text:      "<i>No products found. Type another keyword...</i>",
 				ReplyMarkup: types.TelegramInlineKeyboardMarkup{
 					InlineKeyboard: [][]types.TelegramInlineKeyboardButton{
@@ -177,9 +177,9 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 		}
 
 		return &types.TelegramResponse{
-			Method:    "sendMessage",
+			Method:    types.TelegramMethodSendMessage,
 			ChatId:    chatId,
-			ParseMode: "HTML",
+			ParseMode: types.TelegramParseModeHTML,
 			Text:      "Choose product:",
 			ReplyMarkup: types.TelegramInlineKeyboardMarkup{
 				InlineKeyboard: inlineKeyboard,
@@ -197,9 +197,9 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			}
 
 			return &types.TelegramResponse{
-				Method:    "sendMessage",
+				Method:    types.TelegramMethodSendMessage,
 				ChatId:    chatId,
-				ParseMode: "HTML",
+				ParseMode: types.TelegramParseModeHTML,
 				Text:      "<i>Invalid command</i>",
 			}, nil
 		}
@@ -220,10 +220,10 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			}
 
 			return &types.TelegramResponse{
-				Method:    "editMessageText",
+				Method:    types.TelegramMethodEditMessageText,
 				MessageId: req.CallbackQuery.Message.MessageId,
 				ChatId:    chatId,
-				ParseMode: "HTML",
+				ParseMode: types.TelegramParseModeHTML,
 				Text:      "<i>Canceled</i>",
 			}, nil
 		}
@@ -264,10 +264,10 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			}
 
 			return &types.TelegramResponse{
-				Method:    "editMessageText",
+				Method:    types.TelegramMethodEditMessageText,
 				MessageId: req.CallbackQuery.Message.MessageId,
 				ChatId:    chatId,
-				ParseMode: "HTML",
+				ParseMode: types.TelegramParseModeHTML,
 				Text:      fmt.Sprintf("<i>❌ %s is already in watch list</i>", product.Label),
 			}, nil
 		}
@@ -301,10 +301,10 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 		textB.WriteString("<i>*You'll be notified when a new version is released</i>")
 
 		return &types.TelegramResponse{
-			Method:    "editMessageText",
+			Method:    types.TelegramMethodEditMessageText,
 			MessageId: req.CallbackQuery.Message.MessageId,
 			ChatId:    chatId,
-			ParseMode: "HTML",
+			ParseMode: types.TelegramParseModeHTML,
 			Text:      textB.String(),
 		}, nil
 
@@ -317,9 +317,9 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 		}
 
 		return &types.TelegramResponse{
-			Method:      "sendMessage",
+			Method:      types.TelegramMethodSendMessage,
 			ChatId:      req.Message.Chat.Id,
-			ParseMode:   "HTML",
+			ParseMode:   types.TelegramParseModeHTML,
 			Text:        "<i>Unhandled step</i>",
 			ReplyMarkup: types.DefaultReplyMarkup,
 		}, nil

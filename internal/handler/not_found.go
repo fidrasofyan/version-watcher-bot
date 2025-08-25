@@ -27,18 +27,18 @@ func NotFound(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRes
 		}
 
 		return &types.TelegramResponse{
-			Method:    "editMessageText",
+			Method:    types.TelegramMethodEditMessageText,
 			MessageId: req.CallbackQuery.Message.MessageId,
 			ChatId:    req.CallbackQuery.Message.Chat.Id,
-			ParseMode: "HTML",
+			ParseMode: types.TelegramParseModeHTML,
 			Text:      "<i>Invalid session</i>",
 		}, nil
 	}
 
 	return &types.TelegramResponse{
-		Method:      "sendMessage",
+		Method:      types.TelegramMethodSendMessage,
 		ChatId:      req.Message.Chat.Id,
-		ParseMode:   "HTML",
+		ParseMode:   types.TelegramParseModeHTML,
 		Text:        "<i>Unknown command</i>",
 		ReplyMarkup: types.DefaultReplyMarkup,
 	}, nil

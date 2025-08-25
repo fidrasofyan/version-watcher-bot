@@ -63,7 +63,7 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 		if textB.Len() >= textLimit {
 			service.SendMessage(ctx, &service.SendMessageParams{
 				ChatId:             req.Message.Chat.Id,
-				ParseMode:          "HTML",
+				ParseMode:          service.TelegramParseModeHTML,
 				Text:               textB.String(),
 				LinkPreviewOptions: &types.TelegramLinkPreviewOptions{IsDisabled: true},
 			})
@@ -76,9 +76,9 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 	}
 
 	return &types.TelegramResponse{
-		Method:      "sendMessage",
+		Method:      types.TelegramMethodSendMessage,
 		ChatId:      req.Message.Chat.Id,
-		ParseMode:   "HTML",
+		ParseMode:   types.TelegramParseModeHTML,
 		Text:        textB.String(),
 		ReplyMarkup: types.DefaultReplyMarkup,
 		LinkPreviewOptions: &types.TelegramLinkPreviewOptions{

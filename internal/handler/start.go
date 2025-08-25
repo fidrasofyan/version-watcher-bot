@@ -30,9 +30,9 @@ func Start(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 	}
 
 	return &types.TelegramResponse{
-		Method:      "sendMessage",
+		Method:      types.TelegramMethodSendMessage,
 		ChatId:      req.Message.Chat.Id,
-		ParseMode:   "HTML",
+		ParseMode:   types.TelegramParseModeHTML,
 		Text:        "Welcome to Version Watcher. Type /help to see the list of available commands.",
 		ReplyMarkup: types.DefaultReplyMarkup,
 	}, nil

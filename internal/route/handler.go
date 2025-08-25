@@ -33,9 +33,9 @@ func Handler() fiber.Handler {
 			// Only text message is supported
 			if req.Message.Text == "" {
 				return c.Status(200).JSON(types.TelegramResponse{
-					Method:      "sendMessage",
+					Method:      types.TelegramMethodSendMessage,
 					ChatId:      req.Message.Chat.Id,
-					ParseMode:   "HTML",
+					ParseMode:   types.TelegramParseModeHTML,
 					Text:        "<i>Only text command is supported</i>",
 					ReplyMarkup: types.DefaultReplyMarkup,
 				})
@@ -61,9 +61,9 @@ func Handler() fiber.Handler {
 				return custom_error.NewError(err)
 			}
 			return c.Status(200).JSON(types.TelegramResponse{
-				Method:      "sendMessage",
+				Method:      types.TelegramMethodSendMessage,
 				ChatId:      req.Message.Chat.Id,
-				ParseMode:   "HTML",
+				ParseMode:   types.TelegramParseModeHTML,
 				Text:        "<i>Cancelled</i>",
 				ReplyMarkup: types.DefaultReplyMarkup,
 			})

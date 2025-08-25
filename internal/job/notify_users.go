@@ -127,7 +127,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 				if textB.Len() >= textLimit {
 					service.SendMessage(ctx, &service.SendMessageParams{
 						ChatId:    wl.ChatID,
-						ParseMode: "HTML",
+						ParseMode: service.TelegramParseModeHTML,
 						Text:      textB.String(),
 						LinkPreviewOptions: &types.TelegramLinkPreviewOptions{
 							IsDisabled: true,
@@ -143,7 +143,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 
 			service.SendMessage(ctx, &service.SendMessageParams{
 				ChatId:    wl.ChatID,
-				ParseMode: "HTML",
+				ParseMode: service.TelegramParseModeHTML,
 				Text:      textB.String(),
 				LinkPreviewOptions: &types.TelegramLinkPreviewOptions{
 					IsDisabled: true,

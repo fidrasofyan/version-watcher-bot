@@ -30,9 +30,9 @@ func startHTTPServer(errCh chan<- error) *fiber.App {
 			}
 
 			return c.Status(200).JSON(types.TelegramResponse{
-				Method:      "sendMessage",
+				Method:      types.TelegramMethodSendMessage,
 				ChatId:      body.Message.Chat.Id,
-				ParseMode:   "HTML",
+				ParseMode:   types.TelegramParseModeHTML,
 				Text:        "<i>Something went wrong</i>",
 				ReplyMarkup: types.DefaultReplyMarkup,
 			})

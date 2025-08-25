@@ -42,7 +42,7 @@ func UnwatchStep1(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 			if textB.Len() >= textLimit {
 				service.SendMessage(ctx, &service.SendMessageParams{
 					ChatId:    req.Message.Chat.Id,
-					ParseMode: "HTML",
+					ParseMode: service.TelegramParseModeHTML,
 					Text:      textB.String(),
 					LinkPreviewOptions: &types.TelegramLinkPreviewOptions{
 						IsDisabled: true,
@@ -58,9 +58,9 @@ func UnwatchStep1(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 	}
 
 	return &types.TelegramResponse{
-		Method:    "sendMessage",
+		Method:    types.TelegramMethodSendMessage,
 		ChatId:    req.Message.Chat.Id,
-		ParseMode: "HTML",
+		ParseMode: types.TelegramParseModeHTML,
 		Text:      textB.String(),
 	}, nil
 }
@@ -117,9 +117,9 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 				}
 
 				return &types.TelegramResponse{
-					Method:      "sendMessage",
+					Method:      types.TelegramMethodSendMessage,
 					ChatId:      req.Message.Chat.Id,
-					ParseMode:   "HTML",
+					ParseMode:   types.TelegramParseModeHTML,
 					Text:        "<i>Product not found</i>",
 					ReplyMarkup: types.DefaultReplyMarkup,
 				}, nil
@@ -148,9 +148,9 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 		}
 
 		return &types.TelegramResponse{
-			Method:    "sendMessage",
+			Method:    types.TelegramMethodSendMessage,
 			ChatId:    req.Message.Chat.Id,
-			ParseMode: "HTML",
+			ParseMode: types.TelegramParseModeHTML,
 			Text:      fmt.Sprintf("Are you sure you want to unwatch <b>%s</b>?", product.Label),
 			ReplyMarkup: types.TelegramReplyKeyboardMarkup{
 				ResizeKeyboard: true,
@@ -170,9 +170,9 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 			}
 
 			return &types.TelegramResponse{
-				Method:      "sendMessage",
+				Method:      types.TelegramMethodSendMessage,
 				ChatId:      req.Message.Chat.Id,
-				ParseMode:   "HTML",
+				ParseMode:   types.TelegramParseModeHTML,
 				Text:        "<i>Cancelled</i>",
 				ReplyMarkup: types.DefaultReplyMarkup,
 			}, nil
@@ -206,9 +206,9 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 		}
 
 		return &types.TelegramResponse{
-			Method:      "sendMessage",
+			Method:      types.TelegramMethodSendMessage,
 			ChatId:      req.Message.Chat.Id,
-			ParseMode:   "HTML",
+			ParseMode:   types.TelegramParseModeHTML,
 			Text:        fmt.Sprintf("<b>%s</b> removed from watch list", productData.Label),
 			ReplyMarkup: types.DefaultReplyMarkup,
 		}, nil
@@ -222,9 +222,9 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 		}
 
 		return &types.TelegramResponse{
-			Method:      "sendMessage",
+			Method:      types.TelegramMethodSendMessage,
 			ChatId:      req.Message.Chat.Id,
-			ParseMode:   "HTML",
+			ParseMode:   types.TelegramParseModeHTML,
 			Text:        "<i>Unhandled step</i>",
 			ReplyMarkup: types.DefaultReplyMarkup,
 		}, nil

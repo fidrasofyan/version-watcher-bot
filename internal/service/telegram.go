@@ -13,9 +13,16 @@ import (
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 )
 
+type telegramParseMode string
+
+const (
+	TelegramParseModeHTML       telegramParseMode = "HTML"
+	TelegramParseModeMarkdownV2 telegramParseMode = "MarkdownV2"
+)
+
 type SendMessageParams struct {
 	ChatId             int64                             `json:"chat_id"`
-	ParseMode          string                            `json:"parse_mode"`
+	ParseMode          telegramParseMode                 `json:"parse_mode"`
 	Text               string                            `json:"text"`
 	LinkPreviewOptions *types.TelegramLinkPreviewOptions `json:"link_preview_options,omitempty"`
 }
