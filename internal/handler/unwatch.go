@@ -32,24 +32,24 @@ func UnwatchStep1(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 		textB.WriteString("<i>You watch 1 product</i>\n\n")
 	default:
 		textB.WriteString(fmt.Sprintf("<i>You watch %d products</i>\n\n", len(watchList)))
+	}
 
-		for _, watchListItem := range watchList {
-			// Normalize product name
-			productName := strings.ReplaceAll(watchListItem.ProductName, "-", "_")
-			textB.WriteString(fmt.Sprintf("• %s - /unwatch_%s\n", watchListItem.ProductLabel, productName))
+	for _, watchListItem := range watchList {
+		// Normalize product name
+		productName := strings.ReplaceAll(watchListItem.ProductName, "-", "_")
+		textB.WriteString(fmt.Sprintf("• %s - /unwatch_%s\n", watchListItem.ProductLabel, productName))
 
-			// If text is too long, send it part by part
-			if textB.Len() >= textLimit {
-				service.SendMessage(ctx, &service.SendMessageParams{
-					ChatId:    req.Message.Chat.Id,
-					ParseMode: service.TelegramParseModeHTML,
-					Text:      textB.String(),
-					LinkPreviewOptions: &types.TelegramLinkPreviewOptions{
-						IsDisabled: true,
-					},
-				})
-				textB.Reset()
-			}
+		// If text is too long, send it part by part
+		if textB.Len() >= textLimit {
+			service.SendMessage(ctx, &service.SendMessageParams{
+				ChatId:    req.Message.Chat.Id,
+				ParseMode: service.TelegramParseModeHTML,
+				Text:      textB.String(),
+				LinkPreviewOptions: &types.TelegramLinkPreviewOptions{
+					IsDisabled: true,
+				},
+			})
+			textB.Reset()
 		}
 	}
 
