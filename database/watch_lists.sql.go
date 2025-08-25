@@ -58,7 +58,7 @@ SELECT
 FROM watch_lists wl
 JOIN products p ON wl.product_id = p.id
 WHERE wl.chat_id = $1
-ORDER BY p.label ASC NULLS LAST
+ORDER BY p.name ASC NULLS LAST
 `
 
 type GetWatchListRow struct {
@@ -143,7 +143,7 @@ LEFT JOIN LATERAL (
 ) pv ON true
 WHERE wl.chat_id = $1
 GROUP BY p.id
-ORDER BY p.label ASC NULLS LAST
+ORDER BY p.name ASC NULLS LAST
 `
 
 type GetWatchListsWithProductVersionsRow struct {

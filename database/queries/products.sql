@@ -17,7 +17,7 @@ FROM products WHERE id = $1 LIMIT 1;
 SELECT id, name, label, api_url
 FROM products 
 WHERE label ILIKE $1 
-ORDER BY label ASC NULLS LAST
+ORDER BY name ASC NULLS LAST
 LIMIT 100;
 
 -- name: GetWatchedProductByName :one
@@ -58,4 +58,4 @@ JOIN LATERAL (
 ) pv ON true
 WHERE p.id = ANY($2::int[])
 GROUP BY p.id
-ORDER BY p.label ASC NULLS LAST;
+ORDER BY p.name ASC NULLS LAST;
