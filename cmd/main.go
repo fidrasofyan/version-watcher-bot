@@ -107,6 +107,18 @@ func main() {
 			quitCh <- syscall.SIGQUIT
 		}()
 
+	case "set-webhook":
+		// Set webhook
+		go func() {
+			log.Println("Setting webhook...")
+			err := service.SetWebhook(mainCtx)
+			if err != nil {
+				errCh <- fmt.Errorf("setting webhook: %v", err)
+			}
+			log.Println("DONE: setting webhook")
+			quitCh <- syscall.SIGQUIT
+		}()
+
 	default:
 		log.Printf("Unknown command: %s", os.Args[1])
 		quitCh <- syscall.SIGQUIT
