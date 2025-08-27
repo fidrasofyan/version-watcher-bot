@@ -6,6 +6,7 @@ import (
 	"embed"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/fidrasofyan/version-watcher-bot/internal/config"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,8 +20,7 @@ var Sqlc *Queries
 //go:embed migrations/*.sql
 var embeddedMigrations embed.FS
 
-func LoadDatabase() error {
-	ctx := context.TODO()
+func LoadDatabase(ctx context.Context) error {
 	var err error
 
 	// Open database
@@ -28,7 +28,12 @@ func LoadDatabase() error {
 	if err != nil {
 		return fmt.Errorf("error parsing database URL: %v", err)
 	}
-	pgxConfig.MaxConns = 20
+	pgxConfig.MaxConns = 10
+	pgxConfig.MinConns = 1
+	pgxConfig.MinIdleConns = 1
+	pgxConfig.MaxConnLifetime = time.Hour
+	pgxConfig.MaxConnIdleTime = 10 * time.Minute
+	pgxConfig.HealthCheckPeriod = time.Minute
 
 	Pool, err = pgxpool.NewWithConfig(ctx, pgxConfig)
 	if err != nil {

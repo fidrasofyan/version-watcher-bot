@@ -22,6 +22,8 @@ func main() {
 		log.Fatal("Missing command")
 	}
 
+	mainCtx, cancel := context.WithCancel(context.Background())
+
 	// Load config
 	err := config.LoadConfig()
 	if err != nil {
@@ -30,7 +32,7 @@ func main() {
 	log.Printf("Environment: %s - Runtime: %s\n", config.Cfg.AppEnv, runtime.Version())
 
 	// Load database
-	err = database.LoadDatabase()
+	err = database.LoadDatabase(mainCtx)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
@@ -45,7 +47,6 @@ func main() {
 	)
 	errCh := make(chan error, 1)
 
-	mainCtx, cancel := context.WithCancel(context.Background())
 	var httpServer *fiber.App
 	var cronJob *cron.Cron
 
