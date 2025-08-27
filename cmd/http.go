@@ -26,17 +26,42 @@ func startHTTPServer(errCh chan<- error) *fiber.App {
 		DisableStartupMessage: true,
 		JSONEncoder:           sonic.Marshal,
 		JSONDecoder:           sonic.Unmarshal,
+		BodyLimit:             10 * 1024, // 10KB
+		ReadBufferSize:        4 * 1024,  // 4KB
+		ReadTimeout:           5 * time.Second,
+		WriteTimeout:          10 * time.Second,
+		IdleTimeout:           30 * time.Second,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			code := fiber.StatusInternalServerError
+
+			var fiberErr *fiber.Error
+			if errors.As(err, &fiberErr) {
+				code = fiberErr.Code
+			}
+
+			var body types.TelegramUpdate
+			if err := c.BodyParser(&body); err != nil {
+				err = c.Status(code).JSON(&fiber.Map{
+					"ok":      false,
+					"message": fiberErr.Message,
+				})
+
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(&fiber.Map{
+						"ok":      false,
+						"message": "Internal server error	",
+					})
+				}
+
+				return nil
+			}
+
+			// At this point, the body is a valid Telegram update
 			log.Printf("Error: %v", err)
 
 			text := "<i>Something went wrong</i>"
 			if errors.Is(err, fiber.ErrRequestTimeout) {
 				text = "<i>Request timeout</i>"
-			}
-
-			var body types.TelegramUpdate
-			if err := c.BodyParser(&body); err != nil {
-				return err
 			}
 
 			// Delete chat
