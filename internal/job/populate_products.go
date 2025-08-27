@@ -80,11 +80,15 @@ var httpClient = &http.Client{
 }
 
 func PopulateProducts(ctx context.Context) (*time.Time, error) {
+	// Set timeout
+	ctxWithTimeout, cancel := context.WithTimeout(ctx, 5*time.Minute)
+	defer cancel()
+
 	// Fetch products
 	log.Println("Fetching products...")
 
 	fetchProductsReq, err := http.NewRequestWithContext(
-		ctx,
+		ctxWithTimeout,
 		"GET",
 		"https://endoflife.date/api/v1/products",
 		nil,
@@ -106,11 +110,11 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 	log.Println("DONE: fetched products:", pr.Total)
 
 	// Start transaction
-	tx, err := database.Pool.Begin(ctx)
+	tx, err := database.Pool.Begin(ctxWithTimeout)
 	if err != nil {
 		return nil, custom_error.NewError(err)
 	}
-	defer tx.Rollback(ctx) // Always defer rollback (will do nothing if already committed)
+	defer tx.Rollback(ctxWithTimeout) // Always defer rollback (will do nothing if already committed)
 
 	qtx := database.Sqlc.WithTx(tx)
 	datetime := time.Now()
@@ -118,7 +122,14 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 	// Populate products
 	log.Println("Populating products...")
 	for _, p := range pr.Result {
-		err = qtx.UpsertProduct(ctx, &database.UpsertProductParams{
+		// Check context
+		select {
+		case <-ctxWithTimeout.Done():
+			return nil, custom_error.NewError(ctxWithTimeout.Err())
+		default:
+		}
+
+		err = qtx.UpsertProduct(ctxWithTimeout, &database.UpsertProductParams{
 			Name:      p.Name,
 			Label:     p.Label,
 			Category:  p.Category,
@@ -135,13 +146,20 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 	// Populate product_versions based on watch_lists
 	log.Println("Populating product_versions...")
 
-	watchedProducts, err := qtx.GetWatchedProducts(ctx)
+	watchedProducts, err := qtx.GetWatchedProducts(ctxWithTimeout)
 	if err != nil {
 		return nil, custom_error.NewError(err)
 	}
 	log.Println("Watched products:", len(watchedProducts))
 
 	for _, wp := range watchedProducts {
+		// Check context
+		select {
+		case <-ctxWithTimeout.Done():
+			return nil, custom_error.NewError(ctxWithTimeout.Err())
+		default:
+		}
+
 		// Throttle
 		time.Sleep(100 * time.Millisecond)
 
@@ -151,7 +169,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 		}
 
 		fetchProductReq, err := http.NewRequestWithContext(
-			ctx,
+			ctxWithTimeout,
 			"GET",
 			wp.ApiUrl.(string),
 			nil,
@@ -172,6 +190,13 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 		fetchProductRes.Body.Close()
 
 		for _, release := range pr.Result.Releases {
+			// Check context
+			select {
+			case <-ctxWithTimeout.Done():
+				return nil, custom_error.NewError(ctxWithTimeout.Err())
+			default:
+			}
+
 			// Insert product_version
 			var version string
 			var versionReleaseDate time.Time
@@ -196,7 +221,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 
 			releaseDate, _ := time.Parse("2006-01-02", *release.ReleaseDate)
 
-			err = qtx.CreateProductVersion(ctx, &database.CreateProductVersionParams{
+			err = qtx.CreateProductVersion(ctxWithTimeout, &database.CreateProductVersionParams{
 				ProductID:          wp.ID,
 				ReleaseName:        release.Name,
 				ReleaseCodename:    release.Codename,
@@ -214,5 +239,5 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 	}
 	log.Println("DONE: product_versions populated")
 
-	return &datetime, tx.Commit(ctx)
+	return &datetime, tx.Commit(ctxWithTimeout)
 }

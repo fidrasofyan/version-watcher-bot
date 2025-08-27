@@ -32,14 +32,14 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 		// Populate products and product_versions with the latest data
 		datetime, err := PopulateProducts(ctx)
 		if err != nil {
-			errCh <- fmt.Errorf("notify users: error populating products: %v", err)
+			errCh <- fmt.Errorf("notify users: populating products: %v", err)
 			return
 		}
 
 		// Get distinct	product_id from product_versions that just got populated (i.e. new releases)
 		productIds, err := database.Sqlc.GetDistinctProductIdsFromProductVersionsByCreatedAt(ctx, pgtype.Timestamp{Time: *datetime, Valid: true})
 		if err != nil {
-			errCh <- fmt.Errorf("notify users: error getting product versions: %v", err)
+			errCh <- fmt.Errorf("notify users: getting product versions: %v", err)
 			return
 		}
 
@@ -53,7 +53,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 			Column2:   productIds,
 		})
 		if err != nil {
-			errCh <- fmt.Errorf("notify users: error getting products with new releases: %v", err)
+			errCh <- fmt.Errorf("notify users: getting products with new releases: %v", err)
 			return
 		}
 
@@ -61,7 +61,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 		for i, p := range productsWithNewReleases {
 			var productVersions []productVersion
 			if err := sonic.Unmarshal(p.ProductVersions, &productVersions); err != nil {
-				errCh <- fmt.Errorf("notify users: error unmarshalling product versions: %v", err)
+				errCh <- fmt.Errorf("notify users: unmarshalling product versions: %v", err)
 				return
 			}
 			products[i] = product{
@@ -75,7 +75,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 		// Get watch lists
 		watchLists, err := database.Sqlc.GetWatchListsGroupedByChat(ctx)
 		if err != nil {
-			errCh <- fmt.Errorf("notify users: error getting watch lists: %v", err)
+			errCh <- fmt.Errorf("notify users: getting watch lists: %v", err)
 			return
 		}
 
@@ -83,7 +83,7 @@ func NewNotifyUsers(ctx context.Context, errCh chan<- error) func() {
 		for _, wl := range watchLists {
 			var productIds []int32
 			if err := sonic.Unmarshal(wl.ProductIds, &productIds); err != nil {
-				errCh <- fmt.Errorf("notify users: error unmarshalling product ids: %v", err)
+				errCh <- fmt.Errorf("notify users: unmarshalling product ids: %v", err)
 				return
 			}
 

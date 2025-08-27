@@ -56,7 +56,7 @@ func Handler() fiber.Handler {
 		// Is it "cancel" command?
 		if command == "cancel" {
 			// Delete chat
-			err := repository.TelegramDeleteChat(c.Context(), chatId)
+			err := repository.TelegramDeleteChat(c.UserContext(), chatId)
 			if err != nil {
 				return custom_error.NewError(err)
 			}
@@ -70,7 +70,7 @@ func Handler() fiber.Handler {
 		}
 
 		// Get chat
-		chat, err := repository.TelegramGetChat(c.Context(), chatId)
+		chat, err := repository.TelegramGetChat(c.UserContext(), chatId)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return custom_error.NewError(err)
 		}
@@ -82,7 +82,7 @@ func Handler() fiber.Handler {
 		switch command {
 		// Start
 		case "start":
-			resp, err := handler.Start(c.Context(), req)
+			resp, err := handler.Start(c.UserContext(), req)
 			if err != nil {
 				return custom_error.NewError(err)
 			}
@@ -93,7 +93,7 @@ func Handler() fiber.Handler {
 
 		// Watch
 		case "watch":
-			resp, err := handler.Watch(c.Context(), req)
+			resp, err := handler.Watch(c.UserContext(), req)
 			if err != nil {
 				return custom_error.NewError(err)
 			}
@@ -104,7 +104,7 @@ func Handler() fiber.Handler {
 
 		// Watch list
 		case "watch list":
-			resp, err := handler.WatchList(c.Context(), req)
+			resp, err := handler.WatchList(c.UserContext(), req)
 			if err != nil {
 				return custom_error.NewError(err)
 			}
@@ -115,7 +115,7 @@ func Handler() fiber.Handler {
 
 		// Unwatch
 		case "unwatch":
-			resp, err := handler.UnwatchStep1(c.Context(), req)
+			resp, err := handler.UnwatchStep1(c.UserContext(), req)
 			if err != nil {
 				return custom_error.NewError(err)
 			}
@@ -127,7 +127,7 @@ func Handler() fiber.Handler {
 		// Not found
 		default:
 			if strings.HasPrefix(command, "unwatch_") {
-				resp, err := handler.UnwatchStep2(c.Context(), req)
+				resp, err := handler.UnwatchStep2(c.UserContext(), req)
 				if err != nil {
 					return custom_error.NewError(err)
 				}
@@ -137,7 +137,7 @@ func Handler() fiber.Handler {
 				return c.Status(200).JSON(resp)
 			}
 
-			resp, err := handler.NotFound(c.Context(), req)
+			resp, err := handler.NotFound(c.UserContext(), req)
 			if err != nil || resp == nil {
 				return custom_error.NewError(err)
 			}

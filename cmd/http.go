@@ -1,17 +1,22 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/fidrasofyan/version-watcher-bot/internal/config"
 	"github.com/fidrasofyan/version-watcher-bot/internal/middleware"
+	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/route"
+	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/timeout"
 )
 
 func startHTTPServer(errCh chan<- error) *fiber.App {
@@ -24,16 +29,39 @@ func startHTTPServer(errCh chan<- error) *fiber.App {
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			log.Printf("Error: %v", err)
 
+			text := "<i>Something went wrong</i>"
+			if errors.Is(err, fiber.ErrRequestTimeout) {
+				text = "<i>Request timeout</i>"
+			}
+
 			var body types.TelegramUpdate
 			if err := c.BodyParser(&body); err != nil {
 				return err
+			}
+
+			// Delete chat
+			_ = repository.TelegramDeleteChat(c.Context(), body.CallbackQuery.From.Id)
+
+			if body.CallbackQuery.Id != "" {
+				// Answer callback query
+				_ = service.AnswerCallbackQuery(c.Context(), &service.AnswerCallbackQueryParams{
+					CallbackQueryId: body.CallbackQuery.Id,
+				})
+
+				return c.Status(200).JSON(types.TelegramResponse{
+					Method:    types.TelegramMethodEditMessageText,
+					MessageId: body.CallbackQuery.Message.MessageId,
+					ChatId:    body.CallbackQuery.Message.Chat.Id,
+					ParseMode: types.TelegramParseModeHTML,
+					Text:      text,
+				})
 			}
 
 			return c.Status(200).JSON(types.TelegramResponse{
 				Method:      types.TelegramMethodSendMessage,
 				ChatId:      body.Message.Chat.Id,
 				ParseMode:   types.TelegramParseModeHTML,
-				Text:        "<i>Something went wrong</i>",
+				Text:        text,
 				ReplyMarkup: types.DefaultReplyMarkup,
 			})
 		},
@@ -46,7 +74,11 @@ func startHTTPServer(errCh chan<- error) *fiber.App {
 	}
 
 	// Routes
-	app.Post("/webhook", middleware.Protected(), route.Handler())
+	app.Post(
+		"/webhook",
+		middleware.Protected(),
+		timeout.NewWithContext(route.Handler(), 10*time.Second),
+	)
 
 	// Not found
 	app.Use(func(c *fiber.Ctx) error {
