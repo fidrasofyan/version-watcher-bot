@@ -15,4 +15,5 @@ WORKDIR /app
 COPY --from=builder /app/server .
 USER nonroot:nonroot
 EXPOSE 3000
-ENTRYPOINT ["./server", "start"]
+CMD ["start"]
+ENTRYPOINT ["./server"]
