@@ -1,5 +1,5 @@
 # Stage 1
-FROM golang:1.25.0 AS builder
+FROM golang:1.25.0-alpine AS builder
 ENV CGO_ENABLED=0 \
     GOOS=linux \
     GOARCH=amd64
@@ -15,5 +15,5 @@ WORKDIR /app
 COPY --from=builder /app/server .
 USER nonroot:nonroot
 EXPOSE 3000
-CMD ["start"]
 ENTRYPOINT ["./server"]
+CMD ["start"]
