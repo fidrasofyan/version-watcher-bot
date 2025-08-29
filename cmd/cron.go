@@ -16,11 +16,15 @@ func startCronJob(ctx context.Context) (*cron.Cron, error) {
 	// Listen for errors
 	go func() {
 		for err := range errCh {
-			log.Printf("Cron: error: %v", err)
+			if err != nil {
+				log.Printf("Cron: error: %v", err)
+			}
 		}
 	}()
 
-	_, err := c.AddFunc("*/15 * * * *", job.NewNotifyUsers(ctx, errCh))
+	_, err := c.AddFunc("*/15 * * * *", func() {
+		errCh <- job.NotifyUsers(ctx)
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error adding function: %v", err)
 	}

@@ -103,8 +103,10 @@ func main() {
 	case "notify-users":
 		// Notify users
 		go func() {
-			notifyUsers := job.NewNotifyUsers(mainCtx, errCh)
-			notifyUsers()
+			err := job.NotifyUsers(mainCtx)
+			if err != nil {
+				errCh <- fmt.Errorf("notifying users: %v", err)
+			}
 			quitCh <- syscall.SIGQUIT
 		}()
 
