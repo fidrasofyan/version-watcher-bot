@@ -5,10 +5,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/handler"
 	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
+	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -16,7 +16,7 @@ func Handler() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var req types.TelegramUpdate
 		if err := c.BodyParser(&req); err != nil {
-			return custom_error.NewError(err)
+			return utils.NewError(err)
 		}
 
 		var chatId int64
@@ -58,7 +58,7 @@ func Handler() fiber.Handler {
 			// Delete chat
 			err := repository.TelegramDeleteChat(c.UserContext(), chatId)
 			if err != nil {
-				return custom_error.NewError(err)
+				return utils.NewError(err)
 			}
 			return c.Status(200).JSON(types.TelegramResponse{
 				Method:      types.TelegramMethodSendMessage,
@@ -72,7 +72,7 @@ func Handler() fiber.Handler {
 		// Get chat
 		chat, err := repository.TelegramGetChat(c.UserContext(), chatId)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			return custom_error.NewError(err)
+			return utils.NewError(err)
 		}
 		if chat != nil {
 			// Set command
@@ -84,7 +84,7 @@ func Handler() fiber.Handler {
 		case "start":
 			resp, err := handler.Start(c.UserContext(), req)
 			if err != nil {
-				return custom_error.NewError(err)
+				return utils.NewError(err)
 			}
 			if resp == nil {
 				return c.Status(200).Send(nil)
@@ -95,7 +95,7 @@ func Handler() fiber.Handler {
 		case "watch":
 			resp, err := handler.Watch(c.UserContext(), req)
 			if err != nil {
-				return custom_error.NewError(err)
+				return utils.NewError(err)
 			}
 			if resp == nil {
 				return c.Status(200).Send(nil)
@@ -106,7 +106,7 @@ func Handler() fiber.Handler {
 		case "watch list":
 			resp, err := handler.WatchList(c.UserContext(), req)
 			if err != nil {
-				return custom_error.NewError(err)
+				return utils.NewError(err)
 			}
 			if resp == nil {
 				return c.Status(200).Send(nil)
@@ -117,7 +117,7 @@ func Handler() fiber.Handler {
 		case "unwatch":
 			resp, err := handler.UnwatchStep1(c.UserContext(), req)
 			if err != nil {
-				return custom_error.NewError(err)
+				return utils.NewError(err)
 			}
 			if resp == nil {
 				return c.Status(200).Send(nil)
@@ -129,7 +129,7 @@ func Handler() fiber.Handler {
 			if strings.HasPrefix(command, "unwatch_") {
 				resp, err := handler.UnwatchStep2(c.UserContext(), req)
 				if err != nil {
-					return custom_error.NewError(err)
+					return utils.NewError(err)
 				}
 				if resp == nil {
 					return c.Status(200).Send(nil)
@@ -139,7 +139,7 @@ func Handler() fiber.Handler {
 
 			resp, err := handler.NotFound(c.UserContext(), req)
 			if err != nil || resp == nil {
-				return custom_error.NewError(err)
+				return utils.NewError(err)
 			}
 			return c.Status(200).JSON(resp)
 

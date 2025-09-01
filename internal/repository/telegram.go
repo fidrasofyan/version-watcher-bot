@@ -5,14 +5,14 @@ import (
 	"time"
 
 	"github.com/fidrasofyan/version-watcher-bot/database"
-	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
+	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func TelegramGetChat(ctx context.Context, id int64) (*database.Chat, error) {
 	chat, err := database.Sqlc.GetChat(ctx, id)
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	return chat, nil
@@ -30,7 +30,7 @@ func TelegramSetChat(ctx context.Context, arg *TelegramSetChatParams) (*database
 
 	chatExists, err := database.Sqlc.IsChatExists(ctx, arg.ID)
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	if chatExists {
@@ -42,7 +42,7 @@ func TelegramSetChat(ctx context.Context, arg *TelegramSetChatParams) (*database
 			ID:        arg.ID,
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		return chat, nil
@@ -56,7 +56,7 @@ func TelegramSetChat(ctx context.Context, arg *TelegramSetChatParams) (*database
 		CreatedAt: pgtype.Timestamp{Time: datetime, Valid: true},
 	})
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	return chat, nil
@@ -65,7 +65,7 @@ func TelegramSetChat(ctx context.Context, arg *TelegramSetChatParams) (*database
 func TelegramDeleteChat(ctx context.Context, id int64) error {
 	err := database.Sqlc.DeleteChat(ctx, id)
 	if err != nil {
-		return custom_error.NewError(err)
+		return utils.NewError(err)
 	}
 
 	return nil

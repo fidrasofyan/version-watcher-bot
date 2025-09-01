@@ -5,15 +5,15 @@ import (
 	"time"
 
 	"github.com/fidrasofyan/version-watcher-bot/database"
-	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
+	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func Start(ctx context.Context, req types.TelegramUpdate) (*types.TelegramResponse, error) {
 	exists, err := database.Sqlc.IsUserExists(ctx, req.Message.Chat.Id)
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	if !exists {
@@ -25,7 +25,7 @@ func Start(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 	}
 

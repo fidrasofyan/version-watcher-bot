@@ -13,7 +13,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/fidrasofyan/version-watcher-bot/database"
 	"github.com/fidrasofyan/version-watcher-bot/internal/config"
-	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
+	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -94,17 +94,17 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 		nil,
 	)
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	fetchProductsRes, err := httpClient.Do(fetchProductsReq)
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	var pr FetchProductsResponse
 	if err := sonic.ConfigDefault.NewDecoder(fetchProductsRes.Body).Decode(&pr); err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 	fetchProductsRes.Body.Close()
 	log.Println("DONE: fetched products:", pr.Total)
@@ -112,7 +112,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 	// Start transaction
 	tx, err := database.Pool.Begin(ctxWithTimeout)
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 	defer tx.Rollback(ctxWithTimeout) // Always defer rollback (will do nothing if already committed)
 
@@ -125,7 +125,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 		// Check context
 		select {
 		case <-ctxWithTimeout.Done():
-			return nil, custom_error.NewError(ctxWithTimeout.Err())
+			return nil, utils.NewError(ctxWithTimeout.Err())
 		default:
 		}
 
@@ -138,7 +138,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 			CreatedAt: pgtype.Timestamp{Time: datetime, Valid: true},
 		})
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 	}
 	log.Println("DONE: products populated")
@@ -148,7 +148,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 
 	watchedProducts, err := qtx.GetWatchedProducts(ctxWithTimeout)
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 	log.Println("Watched products:", len(watchedProducts))
 
@@ -156,7 +156,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 		// Check context
 		select {
 		case <-ctxWithTimeout.Done():
-			return nil, custom_error.NewError(ctxWithTimeout.Err())
+			return nil, utils.NewError(ctxWithTimeout.Err())
 		default:
 		}
 
@@ -175,17 +175,17 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 			nil,
 		)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		fetchProductRes, err := httpClient.Do(fetchProductReq)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		var pr FetchProductDetailResponse
 		if err := sonic.ConfigDefault.NewDecoder(fetchProductRes.Body).Decode(&pr); err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 		fetchProductRes.Body.Close()
 
@@ -193,7 +193,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 			// Check context
 			select {
 			case <-ctxWithTimeout.Done():
-				return nil, custom_error.NewError(ctxWithTimeout.Err())
+				return nil, utils.NewError(ctxWithTimeout.Err())
 			default:
 			}
 
@@ -233,7 +233,7 @@ func PopulateProducts(ctx context.Context) (*time.Time, error) {
 				CreatedAt:          pgtype.Timestamp{Time: datetime, Valid: true},
 			})
 			if err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 		}
 	}

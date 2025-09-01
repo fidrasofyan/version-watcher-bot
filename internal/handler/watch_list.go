@@ -7,9 +7,9 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/fidrasofyan/version-watcher-bot/database"
-	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
+	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -23,7 +23,7 @@ type productVersion struct {
 func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramResponse, error) {
 	watchLists, err := database.Sqlc.GetWatchListsWithProductVersions(ctx, req.Message.Chat.Id)
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	textLimit := 3500
@@ -47,7 +47,7 @@ func WatchList(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRe
 		productVersions := []productVersion{}
 		if len(watchList.ProductVersions) != 0 {
 			if err := sonic.Unmarshal(watchList.ProductVersions, &productVersions); err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 		}
 

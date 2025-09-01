@@ -8,9 +8,9 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/fidrasofyan/version-watcher-bot/database"
-	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
+	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -32,13 +32,13 @@ func NotifyUsers(ctx context.Context) error {
 	// Populate products and product_versions with the latest data
 	datetime, err := PopulateProducts(ctx)
 	if err != nil {
-		return custom_error.NewError(err)
+		return utils.NewError(err)
 	}
 
 	// Get distinct	product_id from product_versions that just got populated (i.e. new releases)
 	productIds, err := database.Sqlc.GetDistinctProductIdsFromProductVersionsByCreatedAt(ctx, pgtype.Timestamp{Time: *datetime, Valid: true})
 	if err != nil {
-		return custom_error.NewError(err)
+		return utils.NewError(err)
 	}
 
 	if len(productIds) == 0 {
@@ -51,14 +51,14 @@ func NotifyUsers(ctx context.Context) error {
 		Column2:   productIds,
 	})
 	if err != nil {
-		return custom_error.NewError(err)
+		return utils.NewError(err)
 	}
 
 	products := make([]product, len(productsWithNewReleases))
 	for i, p := range productsWithNewReleases {
 		var productVersions []productVersion
 		if err := sonic.Unmarshal(p.ProductVersions, &productVersions); err != nil {
-			return custom_error.NewError(err)
+			return utils.NewError(err)
 		}
 		products[i] = product{
 			ProductId:       p.ProductID,
@@ -71,14 +71,14 @@ func NotifyUsers(ctx context.Context) error {
 	// Get watch lists
 	watchLists, err := database.Sqlc.GetWatchListsGroupedByChat(ctx)
 	if err != nil {
-		return custom_error.NewError(err)
+		return utils.NewError(err)
 	}
 
 	// Notify users
 	for _, wl := range watchLists {
 		var productIds []int32
 		if err := sonic.Unmarshal(wl.ProductIds, &productIds); err != nil {
-			return custom_error.NewError(err)
+			return utils.NewError(err)
 		}
 
 		filteredProducts := filterProducts(products, productIds)

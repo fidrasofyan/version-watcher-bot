@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/fidrasofyan/version-watcher-bot/database"
-	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
+	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -32,7 +32,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 	// Get chat
 	chat, err := repository.TelegramGetChat(ctx, chatId)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	if chat == nil {
@@ -43,7 +43,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			Step:    1,
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 	}
 
@@ -57,7 +57,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			Step:    2,
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		return &types.TelegramResponse{
@@ -86,7 +86,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			// Delete chat
 			err := repository.TelegramDeleteChat(ctx, chatId)
 			if err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 
 			// Answer callback query
@@ -94,7 +94,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 				CallbackQueryId: req.CallbackQuery.Id,
 			})
 			if err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 
 			return &types.TelegramResponse{
@@ -127,7 +127,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 
 		products, err := database.Sqlc.GetProductsByLabel(ctx, fmt.Sprint("%", req.Message.Text, "%"))
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		if len(products) == 0 {
@@ -173,7 +173,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			Step:    3,
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		return &types.TelegramResponse{
@@ -193,7 +193,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			// Delete chat
 			err := repository.TelegramDeleteChat(ctx, chatId)
 			if err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 
 			return &types.TelegramResponse{
@@ -208,7 +208,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			// Delete chat
 			err := repository.TelegramDeleteChat(ctx, chatId)
 			if err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 
 			// Answer callback query
@@ -216,7 +216,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 				CallbackQueryId: req.CallbackQuery.Id,
 			})
 			if err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 
 			return &types.TelegramResponse{
@@ -230,13 +230,13 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 
 		productId64, err := strconv.ParseInt(req.CallbackQuery.Data, 10, 32)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 		productId := int32(productId64)
 
 		product, err := database.Sqlc.GetProductById(ctx, productId)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		// Is it already in watch list?
@@ -245,14 +245,14 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			ProductID: productId,
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		if isWatchListExists {
 			// Delete chat
 			err = repository.TelegramDeleteChat(ctx, chatId)
 			if err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 
 			// Answer callback query
@@ -260,7 +260,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 				CallbackQueryId: req.CallbackQuery.Id,
 			})
 			if err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 
 			return &types.TelegramResponse{
@@ -279,13 +279,13 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			CreatedAt: pgtype.Timestamp{Time: time.Now(), Valid: true},
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		// Delete chat
 		err = repository.TelegramDeleteChat(ctx, chatId)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		// Answer callback query
@@ -293,7 +293,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 			CallbackQueryId: req.CallbackQuery.Id,
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		var textB strings.Builder
@@ -313,7 +313,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 		// Delete step
 		err := repository.TelegramDeleteChat(ctx, chatId)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		return &types.TelegramResponse{

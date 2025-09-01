@@ -9,16 +9,16 @@ import (
 
 	"github.com/bytedance/sonic"
 	"github.com/fidrasofyan/version-watcher-bot/database"
-	"github.com/fidrasofyan/version-watcher-bot/internal/custom_error"
 	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
+	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
 )
 
 func UnwatchStep1(ctx context.Context, req types.TelegramUpdate) (*types.TelegramResponse, error) {
 	watchList, err := database.Sqlc.GetWatchList(ctx, req.Message.Chat.Id)
 	if err != nil {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	textLimit := 3500
@@ -83,7 +83,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 	// Get chat
 	chat, err := repository.TelegramGetChat(ctx, chatId)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		return nil, custom_error.NewError(err)
+		return nil, utils.NewError(err)
 	}
 
 	if chat == nil {
@@ -94,7 +94,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 			Step:    1,
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 	}
 
@@ -113,7 +113,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 				// Delete chat
 				err := repository.TelegramDeleteChat(ctx, chatId)
 				if err != nil {
-					return nil, custom_error.NewError(err)
+					return nil, utils.NewError(err)
 				}
 
 				return &types.TelegramResponse{
@@ -124,7 +124,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 					ReplyMarkup: types.DefaultReplyMarkup,
 				}, nil
 			}
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		productData := productData{
@@ -133,7 +133,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 		}
 		productDataB, err := sonic.Marshal(productData)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		// Set step
@@ -144,7 +144,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 			Data:    productDataB,
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		return &types.TelegramResponse{
@@ -166,7 +166,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 			// Delete chat
 			err := repository.TelegramDeleteChat(ctx, chatId)
 			if err != nil {
-				return nil, custom_error.NewError(err)
+				return nil, utils.NewError(err)
 			}
 
 			return &types.TelegramResponse{
@@ -181,13 +181,13 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 		// Get chat data
 		chat, err := repository.TelegramGetChat(ctx, chatId)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		// Get product data
 		productData := productData{}
 		if err := sonic.Unmarshal(chat.Data, &productData); err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		// Delete watch list
@@ -196,13 +196,13 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 			ProductID: productData.ID,
 		})
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		// Delete chat
 		err = repository.TelegramDeleteChat(ctx, chatId)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		return &types.TelegramResponse{
@@ -218,7 +218,7 @@ func UnwatchStep2(ctx context.Context, req types.TelegramUpdate) (*types.Telegra
 		// Delete step
 		err := repository.TelegramDeleteChat(ctx, chatId)
 		if err != nil {
-			return nil, custom_error.NewError(err)
+			return nil, utils.NewError(err)
 		}
 
 		return &types.TelegramResponse{
