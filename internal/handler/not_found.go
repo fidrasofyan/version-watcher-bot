@@ -3,7 +3,7 @@ package handler
 import (
 	"context"
 
-	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
+	"github.com/fidrasofyan/version-watcher-bot/database/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 	"github.com/fidrasofyan/version-watcher-bot/internal/utils"

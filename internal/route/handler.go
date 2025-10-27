@@ -5,8 +5,8 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/fidrasofyan/version-watcher-bot/database/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/handler"
-	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
 	"github.com/gofiber/fiber/v2"
@@ -74,7 +74,7 @@ func Handler() fiber.Handler {
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return utils.NewError(err)
 		}
-		if chat != nil {
+		if chat.ID != 0 {
 			// Set command
 			command = chat.Command
 		}

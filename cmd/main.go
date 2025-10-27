@@ -19,20 +19,18 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatal("Missing command")
+		fmt.Println("Missing command")
+		os.Exit(1)
 	}
 
 	mainCtx, cancel := context.WithCancel(context.Background())
 
 	// Load config
-	err := config.LoadConfig()
-	if err != nil {
-		log.Fatalf("Error loading config: %v", err)
-	}
+	config.MustLoadConfig()
 	log.Printf("Environment: %s - Runtime: %s\n", config.Cfg.AppEnv, runtime.Version())
 
 	// Load database
-	err = database.LoadDatabase(mainCtx)
+	err := database.MustLoadDatabase(mainCtx)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
@@ -87,7 +85,7 @@ func main() {
 			}
 
 			// Start HTTP server
-			httpServer = startHTTPServer(errCh)
+			httpServer = MustStartHTTPServer()
 		}()
 
 	case "populate-products":

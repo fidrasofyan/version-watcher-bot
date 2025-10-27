@@ -19,8 +19,15 @@ type Config struct {
 
 var Cfg *Config
 
-func LoadConfig() error {
+func MustLoadConfig() error {
 	godotenv.Load()
+
+	// App timezone
+	if os.Getenv("APP_TIMEZONE") == "" {
+		fmt.Println("missing env variable: APP_TIMEZONE")
+		os.Exit(1)
+	}
+	os.Setenv("TZ", os.Getenv("APP_TIMEZONE"))
 
 	Cfg = &Config{
 		AppEnv:             os.Getenv("APP_ENV"),
@@ -34,28 +41,36 @@ func LoadConfig() error {
 
 	// Validate
 	if Cfg.AppEnv == "" {
-		return fmt.Errorf("missing APP_ENV")
+		fmt.Println("missing APP_ENV")
+		os.Exit(1)
 	}
 	if Cfg.AppEnv != "development" && Cfg.AppEnv != "production" {
-		return fmt.Errorf("invalid APP_ENV: %s", Cfg.AppEnv)
+		fmt.Printf("invalid APP_ENV: %s\n", Cfg.AppEnv)
+		os.Exit(1)
 	}
 	if Cfg.AppHost == "" {
-		return fmt.Errorf("missing APP_HOST")
+		fmt.Println("missing APP_HOST")
+		os.Exit(1)
 	}
 	if Cfg.AppPort == "" {
-		return fmt.Errorf("missing APP_PORT")
+		fmt.Println("missing APP_PORT")
+		os.Exit(1)
 	}
 	if Cfg.TelegramBotToken == "" {
-		return fmt.Errorf("missing TELEGRAM_BOT_TOKEN")
+		fmt.Println("missing TELEGRAM_BOT_TOKEN")
+		os.Exit(1)
 	}
 	if Cfg.DatabaseURL == "" {
-		return fmt.Errorf("missing DATABASE_URL")
+		fmt.Println("missing DATABASE_URL")
+		os.Exit(1)
 	}
 	if Cfg.WebhookURL == "" {
-		return fmt.Errorf("missing WEBHOOK_URL")
+		fmt.Println("missing WEBHOOK_URL")
+		os.Exit(1)
 	}
 	if Cfg.WebhookSecretToken == "" {
-		return fmt.Errorf("missing WEBHOOK_SECRET_TOKEN")
+		fmt.Println("missing WEBHOOK_SECRET_TOKEN")
+		os.Exit(1)
 	}
 
 	return nil

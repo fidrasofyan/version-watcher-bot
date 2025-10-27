@@ -2,14 +2,13 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/bytedance/sonic"
+	"github.com/fidrasofyan/version-watcher-bot/database/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/config"
 	"github.com/fidrasofyan/version-watcher-bot/internal/middleware"
-	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/route"
 	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
@@ -19,7 +18,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/timeout"
 )
 
-func startHTTPServer(errCh chan<- error) *fiber.App {
+func MustStartHTTPServer() *fiber.App {
 	app := fiber.New(fiber.Config{
 		AppName:               "Version Watcher Bot",
 		Prefork:               false,
@@ -116,7 +115,7 @@ func startHTTPServer(errCh chan<- error) *fiber.App {
 		log.Printf("Server is running on http://%s:%s", config.Cfg.AppHost, config.Cfg.AppPort)
 		err := app.Listen(config.Cfg.AppHost + ":" + config.Cfg.AppPort)
 		if err != nil {
-			errCh <- fmt.Errorf("failed to start HTTP server: %v", err)
+			log.Fatalf("failed to start HTTP server: %v", err)
 		}
 	}()
 

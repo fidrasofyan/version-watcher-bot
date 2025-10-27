@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/fidrasofyan/version-watcher-bot/database"
-	"github.com/fidrasofyan/version-watcher-bot/internal/repository"
+	"github.com/fidrasofyan/version-watcher-bot/database/repository"
 	"github.com/fidrasofyan/version-watcher-bot/internal/service"
 	"github.com/fidrasofyan/version-watcher-bot/internal/types"
 	"github.com/fidrasofyan/version-watcher-bot/internal/utils"
@@ -35,7 +35,7 @@ func Watch(ctx context.Context, req types.TelegramUpdate) (*types.TelegramRespon
 		return nil, utils.NewError(err)
 	}
 
-	if chat == nil {
+	if chat.ID == 0 {
 		// Create new chat
 		chat, err = repository.TelegramSetChat(ctx, &repository.TelegramSetChatParams{
 			ID:      chatId,

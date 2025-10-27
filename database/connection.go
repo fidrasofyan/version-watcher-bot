@@ -20,7 +20,7 @@ var Sqlc *Queries
 //go:embed migrations/*.sql
 var embeddedMigrations embed.FS
 
-func LoadDatabase(ctx context.Context) error {
+func MustLoadDatabase(ctx context.Context) error {
 	var err error
 
 	// Open database
